@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0a" />
     <title>VITRONITOR // diagnostic readout</title>
-    <meta name="description" content="Vitronitor: a cross-platform offline-first React boilerplate. Web, iOS, Android, Electron — sync, OTA, and native shells. Vitals monitored." />
+    <meta name="description" content="Vitronitor: a React boilerplate that ships one codebase to web, iOS, Android, and Electron — with offline-first sync (ElectricSQL + TanStack DB) and self-hosted OTA pipelines you actually own." />
     <meta property="og:title" content="VITRONITOR" />
     <meta property="og:description" content="Cross-platform offline-first React boilerplate. Your apps' vitals, monitored across web, iOS, Android, and Electron." />
     <meta property="og:type" content="website" />
@@ -46,12 +46,12 @@
             <p class="kicker">// MONITORING UNIT // ONLINE</p>
             <h1 class="wordmark" data-text="VITRONITOR">VITRONITOR</h1>
             <p class="tagline">
-              Cross-platform offline-first React boilerplate.
-              <br />Your apps' vitals — monitored across
+              One React codebase →
               <span class="hl">web</span>,
               <span class="hl">iOS</span>,
-              <span class="hl">Android</span>, and
-              <span class="hl">Electron</span>.<span class="cursor" aria-hidden="true">▌</span>
+              <span class="hl">Android</span>,
+              <span class="hl">Electron</span>.
+              <br />Offline-first by default. OTA pipelines you actually own.<span class="cursor" aria-hidden="true">▌</span>
             </p>
             <div class="cta-row">
               <a class="btn btn-primary" href="https://github.com/simonflore/vitronitor" target="_blank" rel="noopener">
@@ -65,6 +65,26 @@
           </div>
         </div>
       </header>
+
+      <!-- The pitch -->
+      <section class="panel pitch" aria-labelledby="pitch-h">
+        <div class="panel-head">
+          <span class="dot dot-cyan"></span>
+          <h2 id="pitch-h">WHAT_IS_THIS</h2>
+          <span class="panel-meta">briefing</span>
+        </div>
+        <div class="prose">
+          <p>
+            <strong>Vitronitor is a React boilerplate</strong> that ships one codebase to four targets — web (PWA), iOS, Android, and Electron — and keeps every one of them working when the network drops.
+          </p>
+          <p>
+            Most cross-platform starters give you exactly <em>one</em> of these: native-feel UX, real offline-first sync, or self-hosted update pipelines. Vitronitor ships <strong>all three</strong>, wired together as a working app you can clone and run today.
+          </p>
+          <p>
+            It's built on <strong>Vite + React 19 + Tailwind v4</strong>, with <strong>ElectricSQL</strong> replicating Postgres into IndexedDB, <strong>TanStack DB</strong> for live queries and an offline mutation queue, <strong>Capacitor</strong> for iOS/Android, and <strong>Electron</strong> with system-tray + IPC. Reference backend is <strong>Hono + Supabase + S3-compatible storage</strong> — all swappable. MIT licensed. M1–M10 complete.
+          </p>
+        </div>
+      </section>
 
       <!-- Vital Signs panel: animated gauges -->
       <section class="panel vitals" aria-labelledby="vitals-h">
@@ -81,7 +101,9 @@
               <span class="gauge-value">000%</span>
             </div>
             <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">PG_REPLICA → IndexedDB · WAL drains on reconnect · TanStack DB live queries</p>
+            <p class="gauge-log">
+              ElectricSQL replicates your Postgres tables into a local IndexedDB replica on every platform. Mutations queue in a Write-Ahead Log when offline, drain on reconnect, and survive crashes. TanStack DB sits on top with live queries, so the UI updates the moment a row changes — locally or remotely. The reference example is a notes table with full CRUD + RLS + soft-delete.
+            </p>
           </li>
           <li class="gauge" data-value="98">
             <div class="gauge-row">
@@ -90,7 +112,9 @@
               <span class="gauge-value">000%</span>
             </div>
             <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">self-hosted iOS (Capgo) · Electron renderer state machine · sign · serve · verify</p>
+            <p class="gauge-log">
+              Push JS-only updates without an app-store review or a forced restart. iOS uses self-hosted Capgo; Electron uses a custom shell auto-updater plus a renderer state machine. You own the full <code>publish → sign → serve → verify</code> loop. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket.
+            </p>
           </li>
           <li class="gauge" data-value="100">
             <div class="gauge-row">
@@ -99,7 +123,9 @@
               <span class="gauge-value">000%</span>
             </div>
             <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">Capacitor (iOS/Android) · Electron tray + IPC · safeStorage auth · deep links</p>
+            <p class="gauge-log">
+              Capacitor 8 with a custom-plugin pattern handles iOS and Android, including native network and auth bridges. Electron 41 ships with a system tray, deep-link handler, IPC layer, and safeStorage-backed credential storage. It is a real native shell, not a thin web wrapper — you get keyboard shortcuts, OS integration, and offline launch out of the box.
+            </p>
           </li>
           <li class="gauge" data-value="100">
             <div class="gauge-row">
@@ -108,7 +134,48 @@
               <span class="gauge-value">000%</span>
             </div>
             <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">Hono reference · Bun · Workers · Express · FastAPI · Rails · anything HTTP+JSON</p>
+            <p class="gauge-log">
+              The repo's reference server is Hono, but the client only assumes the HTTP+JSON contracts in <code>docs/BACKEND_CONTRACTS.md</code>. Implement them on Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js API routes, FastAPI, Rails, Go, Rust, .NET, PHP — anything. The auth provider (Supabase) and object store (S3-compatible) are also swappable.
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- The stack -->
+      <section class="panel stack" aria-labelledby="stack-h">
+        <div class="panel-head">
+          <span class="dot dot-indigo"></span>
+          <h2 id="stack-h">THE_STACK</h2>
+          <span class="panel-meta">what's in the box</span>
+        </div>
+        <ul class="stack-list">
+          <li>
+            <span class="stack-label">FRONTEND</span>
+            <span class="stack-value">Vite 8 · React 19 · Tailwind v4 · React Router 7 (hash routing for cross-platform)</span>
+          </li>
+          <li>
+            <span class="stack-label">SYNC</span>
+            <span class="stack-value">ElectricSQL (Postgres → IndexedDB) · TanStack DB (live queries · WAL mutation queue)</span>
+          </li>
+          <li>
+            <span class="stack-label">NATIVE</span>
+            <span class="stack-value">Capacitor 8 (iOS · Android · custom plugin pattern) · Electron 41 (tray · IPC · safeStorage)</span>
+          </li>
+          <li>
+            <span class="stack-label">OTA</span>
+            <span class="stack-value">Self-hosted Capgo for iOS · custom shell auto-updater + renderer state machine for Electron · S3-compatible bundle hosting</span>
+          </li>
+          <li>
+            <span class="stack-label">REFERENCE_BACKEND</span>
+            <span class="stack-value">Hono · Supabase auth · Postgres + RLS · Caddy fronting <code>/api</code> + Vite dev server (swappable)</span>
+          </li>
+          <li>
+            <span class="stack-label">VALIDATION</span>
+            <span class="stack-value">Zod schemas · codegen for Electric collections · TypeScript end-to-end</span>
+          </li>
+          <li>
+            <span class="stack-label">LICENSE</span>
+            <span class="stack-value">MIT · open source · Node 22+</span>
           </li>
         </ul>
       </section>
@@ -127,7 +194,7 @@
 └─────┘</pre>
             <h3>WEB / PWA</h3>
             <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
-            <p class="card-body">Vite + React 19. Service Worker queues mutations offline; drains on reconnect.</p>
+            <p class="card-body">Vite + React 19 SPA. Installable PWA with manifest + Service Worker. SW caches the shell and provides a fallback mutation queue for the rare cases the WAL can't reach IndexedDB.</p>
           </li>
           <li class="card">
             <pre class="card-icon" aria-hidden="true">┌─────┐
@@ -135,7 +202,7 @@
 └──┬──┘</pre>
             <h3>iOS</h3>
             <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
-            <p class="card-body">Capacitor with custom plugins. Self-hosted Capgo OTA. Fastlane lanes included.</p>
+            <p class="card-body">Capacitor 8 shell with native auth + network bridges. Self-hosted Capgo OTA pipeline (sign · publish · verify). Fastlane lanes for beta + release. GitHub Actions workflow for bundle publishing included.</p>
           </li>
           <li class="card">
             <pre class="card-icon" aria-hidden="true">┌─────┐
@@ -143,7 +210,7 @@
 └─────┘</pre>
             <h3>ANDROID</h3>
             <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
-            <p class="card-body">Capacitor shell, native network + auth bridges, same offline replica.</p>
+            <p class="card-body">Same Capacitor codebase as iOS — same offline replica, same custom plugin pattern, same auth flow. Build via the standard Android tooling; OTA shares the iOS pipeline.</p>
           </li>
           <li class="card">
             <pre class="card-icon" aria-hidden="true">┌─────┐
@@ -151,9 +218,30 @@
 └─────┘</pre>
             <h3>ELECTRON</h3>
             <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
-            <p class="card-body">Tray + IPC + safeStorage. Shell auto-updater + custom renderer OTA.</p>
+            <p class="card-body">Electron 41 with system tray, deep-link handler, IPC layer, and safeStorage credentials. Shell auto-updater (electron-updater) plus a custom renderer OTA so JS ships independently of native binaries.</p>
           </li>
         </ul>
+      </section>
+
+      <!-- Status / milestones -->
+      <section class="panel status" aria-labelledby="status-h">
+        <div class="panel-head">
+          <span class="dot dot-green"></span>
+          <h2 id="status-h">STATUS</h2>
+          <span class="panel-meta">10 of 10 complete</span>
+        </div>
+        <ol class="milestones">
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M1</span><span class="m-text">Vite + React + Tailwind + Caddy + Hono hello-world</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M2</span><span class="m-text">Supabase auth + notes table + plain CRUD API</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M3</span><span class="m-text">TanStack DB + Electric provider + notes collection + persistence + <code>useCollection</code> hook</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M4</span><span class="m-text">Service Worker + offline mutation queue (web)</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M5</span><span class="m-text">Capacitor iOS + Fastlane lanes + native auth/network</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M6</span><span class="m-text">iOS Capgo OTA pipeline (self-hosted)</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M7</span><span class="m-text">Electron main + preload + tray + IPC + electron-builder</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M8</span><span class="m-text">Electron shell auto-updater</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M9</span><span class="m-text">Electron renderer OTA</span></li>
+          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M10</span><span class="m-text">Android + final docs</span></li>
+        </ol>
       </section>
 
       <!-- Quick start -->
@@ -163,6 +251,9 @@
           <h2 id="qs-h">BOOT_SEQUENCE</h2>
           <span class="panel-meta">copy · paste · run</span>
         </div>
+        <p class="prereqs">
+          Prereqs: Node 22+, a Supabase project, an Electric source (Cloud or self-hosted), an S3-compatible bucket for OTA bundles. Caddy if you run the reference Hono backend.
+        </p>
         <div class="terminal">
           <div class="terminal-bar">
             <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>

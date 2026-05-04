@@ -366,9 +366,127 @@ a:hover {
 }
 .gauge.tick .bar-fill { width: var(--target, 0%); }
 .gauge-log {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--fg-dim);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 78ch;
+}
+.gauge-log code {
+  font-family: var(--mono);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--line);
+  padding: 0 5px;
+  border-radius: 2px;
+  color: var(--fg);
   font-size: 12px;
+}
+
+/* Prose blocks inside panels (pitch, etc.) */
+.prose {
+  padding: 16px 20px 22px;
+  max-width: 80ch;
+}
+.prose p {
+  margin: 0 0 12px;
+  color: var(--fg);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { color: var(--fg); }
+.prose em { color: var(--crt-cyan); font-style: normal; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+
+/* Stack list */
+.stack-list {
+  list-style: none;
+  margin: 0;
+  padding: 14px 16px 18px;
+  display: grid;
+  gap: 10px;
+}
+.stack-list li {
+  display: grid;
+  grid-template-columns: 16ch 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 8px 8px 8px 10px;
+  border-left: 2px solid var(--line-2);
+}
+.stack-list li:hover {
+  border-left-color: var(--accent);
+  background: rgba(99, 102, 241, 0.04);
+}
+.stack-label {
+  color: var(--crt-green);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.stack-value {
+  color: var(--fg-dim);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.stack-value code {
+  font-family: var(--mono);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--line);
+  padding: 0 5px;
+  border-radius: 2px;
+  color: var(--fg);
+  font-size: 12px;
+}
+@media (max-width: 620px) {
+  .stack-list li { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* Milestones */
+.milestones {
+  list-style: none;
+  margin: 0;
+  padding: 14px 16px 18px;
+  display: grid;
+  gap: 6px;
+  counter-reset: m;
+}
+.milestones li {
+  display: grid;
+  grid-template-columns: auto 4ch 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13.5px;
+  color: var(--fg-dim);
+  padding: 4px 6px;
+}
+.milestones li:hover { background: rgba(74, 222, 128, 0.06); }
+.m-tick {
+  color: var(--crt-green);
+  font-size: 12px;
+  text-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+}
+.m-id {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.m-text { color: var(--fg); }
+.m-text code {
+  font-family: var(--mono);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 0 5px;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+/* Prereqs note above quickstart */
+.prereqs {
+  margin: 0;
+  padding: 12px 18px 4px;
+  color: var(--fg-dim);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 80ch;
 }
 
 /* Platform grid */
