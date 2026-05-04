@@ -1,7 +1,7 @@
-# Electric setup (M3)
+# Electric setup
 
 Vitronitor uses [ElectricSQL](https://electric-sql.com) to stream Postgres changes
-into local replicas (IndexedDB on web, SQLite on native in M7). The reference
+into local replicas (IndexedDB on web, SQLite on Electron). The reference
 setup uses **Electric Cloud**, but you can self-host the Electric source —
 the only thing the boilerplate cares about is `ELECTRIC_API_URL` +
 `ELECTRIC_SOURCE_ID` + `ELECTRIC_SOURCE_SECRET`.
@@ -38,7 +38,7 @@ The boilerplate proxy doesn't care about the upstream URL — it just forwards.
 
 ## 2. Verify the publication
 
-The migration in M2 ran `ALTER PUBLICATION supabase_realtime ADD TABLE notes;`.
+The notes migration ran `ALTER PUBLICATION supabase_realtime ADD TABLE notes;`.
 Verify with:
 
 ```sql

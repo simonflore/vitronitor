@@ -10,7 +10,7 @@
 //   - GET /api/electric/shape → bypassed entirely (long-polling; cache useless,
 //     intercepting just doubles every pending request in DevTools)
 //   - Non-GET /api/* → bypassed (mutations route through the Electric WAL +
-//     mutation queue processor in M3 — that's the offline-first write path,
+//     mutation queue processor — that's the offline-first write path,
 //     not Background Sync API)
 //   - SPA shell navigations → network-first, cached fallback, basic offline page
 //   - Static assets → cache-first with background refresh

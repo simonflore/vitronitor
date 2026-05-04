@@ -11,7 +11,7 @@
  *   5. On server rejection (4xx/5xx): removes from WAL and re-throws so the
  *      UI surfaces the error.
  *
- * Web does not use this path — the Service Worker (M4) intercepts fetch and
+ * Web does not use this path — the Service Worker intercepts fetch and
  * queues via the Background Sync API instead.
  *
  * Idempotency assumption: every mutation uses a client-generated UUID as the

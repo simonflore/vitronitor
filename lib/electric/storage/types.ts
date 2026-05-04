@@ -3,9 +3,9 @@
  *
  * The PersistenceAdapter interface is platform-agnostic. Each platform
  * implements it differently:
- *   - web (M4)        — IndexedDB
- *   - Capacitor (M5)  — IndexedDB (via WebView) + later: SQLite for larger data
- *   - Electron (M7)   — better-sqlite3 via IPC (with IndexedDB fallback)
+ *   - web        — IndexedDB
+ *   - Capacitor  — IndexedDB (via WebView) + later: SQLite for larger data
+ *   - Electron   — better-sqlite3 via IPC (with IndexedDB fallback)
  *
  * All keys are scoped by orgId so multi-org apps don't leak between tenants.
  */

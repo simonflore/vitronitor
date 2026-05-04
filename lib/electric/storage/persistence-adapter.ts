@@ -2,7 +2,7 @@
  * Persistence adapter singleton + helpers.
  *
  * Picks the best adapter for the runtime:
- *   1. (M7) Electron: try better-sqlite3 via IPC. Fall back to IndexedDB.
+ *   1. Electron: try better-sqlite3 via IPC. Fall back to IndexedDB.
  *   2. IndexedDB: web + Capacitor + Electron fallback.
  *   3. Otherwise: NoPersistenceAdapter (SSR / tests).
  *
@@ -29,8 +29,8 @@ export async function getPersistenceAdapter(): Promise<PersistenceAdapter> {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    // M7 will plug in an Electron SQLite adapter here. For M3-M6 IndexedDB is
-    // sufficient on every supported runtime.
+    // An Electron SQLite adapter can be plugged in here. IndexedDB is
+    // sufficient on every currently supported runtime.
     const idb = new IndexedDbPersistenceAdapter();
     await idb.init();
     if (idb.isAvailable) {

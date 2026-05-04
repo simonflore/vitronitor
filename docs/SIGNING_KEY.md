@@ -1,8 +1,8 @@
 # OTA signing key
 
-Both OTA pipelines — Capacitor (iOS/Android, M6) and Electron renderer
-(M9) — RSA-sign every bundle they ship. Devices verify the signature
-against an embedded public key (`capacitor.config.ts` for Capacitor,
+Both OTA pipelines — Capacitor (iOS/Android) and the Electron renderer —
+RSA-sign every bundle they ship. Devices verify the signature against an
+embedded public key (`capacitor.config.ts` for Capacitor,
 `electron/main/renderer-ota.ts` for Electron). Without a matching key
 pair, the device rejects the bundle.
 
@@ -29,7 +29,7 @@ This:
 
 Open `capacitor.config.ts` and replace the placeholder `publicKey` with the
 PEM you just printed. **Both** the BEGIN/END lines must be present. Same key
-goes into `electron/main/renderer-ota.ts` (`PUBLIC_KEY_PEM` constant added in M9).
+goes into `electron/main/renderer-ota.ts` (the `PUBLIC_KEY_PEM` constant).
 
 ## 3. Add the private key to CI secrets
 

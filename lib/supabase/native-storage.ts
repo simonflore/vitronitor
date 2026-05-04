@@ -5,7 +5,7 @@
  * Capacitor: WebView storage gets evicted aggressively on iOS/Android. We
  *   back the auth session with @capacitor/preferences (UserDefaults / Shared
  *   Prefs) which survives WebView eviction.
- * Electron (M7): backed by safeStorage via IPC — same interface.
+ * Electron: backed by safeStorage via IPC — same interface.
  *
  * The adapter conforms to the @supabase/supabase-js GoTrueClient storage
  * interface: { getItem, setItem, removeItem }. `createClient()` in

@@ -4,7 +4,7 @@ import { useCapacitorUpdater } from '@/lib/hooks/useCapacitorUpdater';
 /**
  * Manual OTA controls for testing. Mounted at /dev/update-debug.
  *
- * Useful checks during M6 setup:
+ * Useful checks during OTA pipeline setup:
  *   - "Check" hits POST /api/capacitor/bundle and shows the response
  *   - "Download" verifies the signed bundle (refuses on bad signature)
  *   - "Install" swaps the bundle and reloads the WebView

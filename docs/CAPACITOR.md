@@ -1,10 +1,7 @@
-# Capacitor (iOS / Android) — M5
+# Capacitor (iOS / Android)
 
-Capacitor wraps the Vite SPA in a native shell. The same React app runs:
-- web (M1–M4)
-- iOS (this milestone)
-- Android (M10)
-- Electron (M7–M9)
+Capacitor wraps the Vite SPA in a native shell. The same React app runs on
+web, iOS, Android, and Electron.
 
 ## Prerequisites
 
@@ -74,7 +71,7 @@ npm run cap:open:android
 Run on an emulator (Pixel 7 + API 34 is a good baseline). The Android
 manifest already has internet permission via Capacitor defaults.
 
-The Capgo OTA pipeline (M6) works the same on Android — same
+The Capgo OTA pipeline works the same on Android — same
 `.capgo_key_v2` signs the bundle, same `POST /api/capacitor/bundle` endpoint,
 same `publish-capacitor-bundle.sh`. After your first manual install via
 Android Studio (or the Play Store), subsequent JS-only updates ship via
@@ -164,9 +161,10 @@ bundle exec fastlane ios certs       # syncs certs via Match (one-time)
 bundle exec fastlane ios beta        # build + upload to TestFlight
 ```
 
-## 8. Capgo OTA (M6)
+## 8. Capgo OTA
 
 The `CapacitorUpdater` plugin is already configured in `capacitor.config.ts`
-with `autoUpdate: false` and a placeholder public key. M6 wires up the
-self-hosted OTA pipeline (S3 + signing key + server endpoint). Until then,
-the plugin is dormant — first install must come from Xcode/TestFlight.
+with `autoUpdate: false` and a placeholder public key. The self-hosted OTA
+pipeline (S3 + signing key + server endpoint) drives the live update flow;
+until those are wired up, the plugin is dormant — first install must come
+from Xcode/TestFlight.

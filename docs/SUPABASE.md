@@ -1,7 +1,7 @@
-# Supabase setup (M2)
+# Supabase setup
 
-Vitronitor uses Supabase as the reference auth + Postgres provider. The contracts
-in `docs/BACKEND_CONTRACTS.md` (added in M3) explain what to implement if you
+Vitronitor uses Supabase as the reference auth + Postgres provider. The
+contracts in `docs/BACKEND_CONTRACTS.md` explain what to implement if you
 want to swap it for Auth.js / Clerk / a hand-rolled JWT setup.
 
 ## 1. Create a project
@@ -108,4 +108,4 @@ The single-org-per-user trigger is documented at the top of
 2. Build an org-creation flow (invite codes, "create another workspace" button).
 3. Persist the user's selected org id (localStorage).
 4. Send `X-Org-Id` on every API call (the auth middleware already validates).
-5. Recreate Electric collections on org switch (M3 — see TanStackDbProvider).
+5. Recreate Electric collections on org switch (see TanStackDbProvider).

@@ -9,9 +9,9 @@
  * The shape consumed by:
  *   - lib/supabase/native-storage.ts → getStorageItem / setStorageItem / removeStorageItem
  *   - lib/platform.ts → window.electronAPI presence as the "is Electron?" sentinel
- *   - lib/hooks/useElectronUpdater.ts (M8) → updater methods + onUpdateStatus
+ *   - lib/hooks/useElectronUpdater.ts → updater methods + onUpdateStatus
  *   - lib/electric/storage/adapters/electron-sqlite-adapter.ts (future) → sqlite.*
- *   - src/main.tsx (M9) → rendererOta.notifyReady
+ *   - src/main.tsx → rendererOta.notifyReady
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
@@ -39,7 +39,7 @@ const electronAPI = {
     safeInvoke('storage:set-item', key, value),
   removeStorageItem: (key: string): Promise<void> => safeInvoke('storage:remove-item', key),
 
-  // M8: Auto-updater (electron-updater). Stubbed for M7 — calls will reject.
+  // Auto-updater (electron-updater). Calls reject if updater isn't wired up.
   checkForUpdates: (): Promise<{ success: boolean; error?: string }> =>
     safeInvoke('updater:check'),
   downloadUpdate: (): Promise<{ success: boolean; error?: string }> =>
@@ -60,7 +60,7 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('updater:status', handler);
   },
 
-  // M9: Renderer OTA. Stubbed for M7.
+  // Renderer OTA.
   rendererOta: {
     /** Confirm a successful boot of the staged version. Called once after
      * React mounts in src/main.tsx. If notifyReady doesn't fire within the

@@ -4,7 +4,7 @@
  *   - attaches the Supabase Bearer token automatically
  *   - unwraps the { ok, data } | { ok: false, error } envelope
  *
- * M3 extends this with offline mutation queuing (web SW + Electric WAL).
+ * Offline mutation queuing is layered on top via the web SW + Electric WAL.
  */
 
 import { createClient } from '@/lib/supabase/client';
@@ -43,7 +43,7 @@ export class ApiFetchError extends Error {
  *     return import.meta.env.VITE_API_BASE_URL  → absolute URL required
  *
  * Detection: if the page origin is a `capacitor://` or `file://` URL we're
- * native. M5/M7 set VITE_API_BASE_URL in the native build env files.
+ * native. The native build env files set VITE_API_BASE_URL.
  */
 export function getApiBaseUrl(): string {
   if (typeof window === 'undefined') return '';

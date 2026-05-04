@@ -1,4 +1,4 @@
-# Object store setup (M6 / M8 / M9)
+# Object store setup
 
 The OTA pipelines (iOS Capgo, Electron shell, Electron renderer) all write to
 an S3-compatible object store. Vitronitor is tested against:
@@ -20,14 +20,14 @@ override via `S3_RELEASES_BUCKET` env var.
 ```
 <bucket>/
 ├── capacitor/
-│   └── bundle/                       # M6 — iOS Capacitor JS bundle OTA
+│   └── bundle/                       # iOS Capacitor JS bundle OTA
 │       ├── manifest.json             # current version pointer (cached 60s server-side)
 │       └── <version>/bundle.zip      # RSA-signed AES-encrypted bundle
 └── electron/
-    ├── bundle/                       # M9 — Electron renderer JS bundle OTA
+    ├── bundle/                       # Electron renderer JS bundle OTA
     │   ├── manifest.json
     │   └── <version>/bundle.zip
-    └── shell/                        # M8 — electron-updater installers
+    └── shell/                        # electron-updater installers
         ├── latest-mac.yml
         ├── latest-linux.yml
         ├── latest.yml                # windows

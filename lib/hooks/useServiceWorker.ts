@@ -8,7 +8,7 @@
  *
  * On native (Capacitor/Electron) the SW is not installed — registration is
  * a no-op there. Native gets its updates via the Capgo / renderer-OTA
- * pipelines instead (M6 / M9).
+ * pipelines instead.
  */
 
 import { useEffect, useState } from 'react';

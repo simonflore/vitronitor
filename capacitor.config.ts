@@ -10,8 +10,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
  *   - server.url    → ONLY for live-reload-against-laptop dev. Comment out
  *                     for prod builds; the WebView loads bundled dist/.
  *   - CapacitorUpdater.updateUrl → your prod API URL + /api/capacitor/bundle
- *   - CapacitorUpdater.publicKey → the PEM half of your Capgo key (M6 wires
- *                                  this; placeholder PEM below is invalid)
+ *   - CapacitorUpdater.publicKey → the PEM half of your Capgo key (the
+ *                                  placeholder PEM below is invalid)
  */
 const config: CapacitorConfig = {
   appId: 'com.example.app',
@@ -45,9 +45,9 @@ const config: CapacitorConfig = {
       style: 'DARK',
     },
     CapacitorUpdater: {
-      // M6 — self-hosted Capgo OTA. Until then, autoUpdate stays false and
-      // the placeholder publicKey makes any signature verification fail
-      // (which is correct: nothing should be applied yet).
+      // Self-hosted Capgo OTA. autoUpdate stays false and the placeholder
+      // publicKey makes any signature verification fail (which is correct:
+      // nothing should be applied until you replace it with your own key).
       autoUpdate: false,
       updateUrl: 'https://example.com/api/capacitor/bundle',
       statsUrl: '',
@@ -57,7 +57,7 @@ const config: CapacitorConfig = {
       autoDeletePrevious: true,
       resetWhenUpdate: true,
       // Replace with the public half of your Capgo signing key (printed by
-      // scripts/setup-signing-key.sh in M6).
+      // scripts/setup-signing-key.sh).
       publicKey: '-----BEGIN RSA PUBLIC KEY-----\nREPLACE_WITH_YOUR_PUBLIC_KEY\n-----END RSA PUBLIC KEY-----\n',
     },
   },

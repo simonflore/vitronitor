@@ -1,9 +1,9 @@
 /**
  * Notes CRUD API.
  *
- * M2: plain HTTP CRUD scoped by the resolved orgId. M3 wires this same
- * endpoint to the Electric collection's WAL (the client persists the
- * mutation locally first, then drains via this route when online).
+ * Plain HTTP CRUD scoped by the resolved orgId. The client wires this same
+ * endpoint to the Electric collection's WAL (persists the mutation locally
+ * first, then drains via this route when online).
  *
  * Soft-delete on DELETE (sets deleted_at) so Electric can stream the change
  * to all subscribers — hard deletes don't cleanly emit row events without
