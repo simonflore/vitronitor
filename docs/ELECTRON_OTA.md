@@ -1,11 +1,11 @@
-# Electron OTA pipelines (M8 + M9)
+# Electron OTA pipelines
 
 Two independent update pipelines:
 
 | Pipeline | What it ships | Trigger | When |
 |---|---|---|---|
-| **Shell auto-update (M8)** | The compiled binary (.dmg / .zip / .exe / .AppImage) | electron-updater hits `GET /api/electron/shell/latest-mac.yml` on launch + every hour | When you change `electron/main/**`, native deps, or `electron-builder.config.cjs` |
-| **Renderer OTA (M9)** | The Vite-built JS bundle (`dist/`) | Renderer pings `POST /api/electron/bundle` ~30s after boot + every hour | When you change `src/`, `app/`, `components/`, `lib/`, `public/` (anything renderer-only) |
+| **Shell auto-update** | The compiled binary (.dmg / .zip / .exe / .AppImage) | electron-updater hits `GET /api/electron/shell/latest-mac.yml` on launch + every hour | When you change `electron/main/**`, native deps, or `electron-builder.config.cjs` |
+| **Renderer OTA** | The Vite-built JS bundle (`dist/`) | Renderer pings `POST /api/electron/bundle` ~30s after boot + every hour | When you change `src/`, `app/`, `components/`, `lib/`, `public/` (anything renderer-only) |
 
 The **shell update is rare and heavyweight**: requires a Mac with a Developer
 cert for notarization, downloads ~100 MB of compressed app, prompts the user
@@ -13,7 +13,7 @@ to restart. The **renderer OTA is frequent and cheap**: GitHub-Actions-friendly
 build, ~1 MB encrypted JS payload, hot-swaps on next launch with rollback if
 the bundle fails to call `notifyReady`.
 
-## M8 — Shell auto-update
+## Shell auto-update
 
 ### Architecture
 
@@ -78,7 +78,7 @@ For production UX, surface a "Restart to apply update" toast when
   include both `dmg` and `zip`; electron-updater downloads from the .zip
   for the squashed delta.
 
-## M9 — Renderer OTA
+## Renderer OTA
 
 Hot-swap the JS bundle without touching the binary. Same RSA-signed wire
 format as iOS Capgo (same `.capgo_key_v2` signs both), same

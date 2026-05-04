@@ -81,7 +81,7 @@
             Most cross-platform starters give you exactly <em>one</em> of these: native-feel UX, real offline-first sync, or self-hosted update pipelines. Vitronitor ships <strong>all three</strong>, wired together as a working app you can clone and run today.
           </p>
           <p>
-            It's built on <strong>Vite + React 19 + Tailwind v4</strong>, with <strong>ElectricSQL</strong> replicating Postgres into IndexedDB, <strong>TanStack DB</strong> for live queries and an offline mutation queue, <strong>Capacitor</strong> for iOS/Android, and <strong>Electron</strong> with system-tray + IPC. Reference backend is <strong>Hono + Supabase + S3-compatible storage</strong> — all swappable. MIT licensed. M1–M10 complete.
+            It's built on <strong>Vite + React 19 + Tailwind v4</strong>, with <strong>ElectricSQL</strong> replicating Postgres into IndexedDB, <strong>TanStack DB</strong> for live queries and an offline mutation queue, <strong>Capacitor</strong> for iOS/Android, and <strong>Electron</strong> with system-tray + IPC. Reference backend is <strong>Hono + Supabase + S3-compatible storage</strong> — all swappable. MIT licensed.
           </p>
         </div>
       </section>
@@ -221,27 +221,6 @@
             <p class="card-body">Electron 41 with system tray, deep-link handler, IPC layer, and safeStorage credentials. Shell auto-updater (electron-updater) plus a custom renderer OTA so JS ships independently of native binaries.</p>
           </li>
         </ul>
-      </section>
-
-      <!-- Status / milestones -->
-      <section class="panel status" aria-labelledby="status-h">
-        <div class="panel-head">
-          <span class="dot dot-green"></span>
-          <h2 id="status-h">STATUS</h2>
-          <span class="panel-meta">10 of 10 complete</span>
-        </div>
-        <ol class="milestones">
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M1</span><span class="m-text">Vite + React + Tailwind + Caddy + Hono hello-world</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M2</span><span class="m-text">Supabase auth + notes table + plain CRUD API</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M3</span><span class="m-text">TanStack DB + Electric provider + notes collection + persistence + <code>useCollection</code> hook</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M4</span><span class="m-text">Service Worker + offline mutation queue (web)</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M5</span><span class="m-text">Capacitor iOS + Fastlane lanes + native auth/network</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M6</span><span class="m-text">iOS Capgo OTA pipeline (self-hosted)</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M7</span><span class="m-text">Electron main + preload + tray + IPC + electron-builder</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M8</span><span class="m-text">Electron shell auto-updater</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M9</span><span class="m-text">Electron renderer OTA</span></li>
-          <li><span class="m-tick" aria-hidden="true">[x]</span><span class="m-id">M10</span><span class="m-text">Android + final docs</span></li>
-        </ol>
       </section>
 
       <!-- Quick start -->

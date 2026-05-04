@@ -18,7 +18,7 @@ declare global {
       setStorageItem: (key: string, value: string) => Promise<void>;
       removeStorageItem: (key: string) => Promise<void>;
 
-      // Auto-updater (M8)
+      // Auto-updater
       checkForUpdates: () => Promise<{ success: boolean; error?: string }>;
       downloadUpdate: () => Promise<{ success: boolean; error?: string }>;
       installUpdate: () => Promise<void>;
@@ -32,7 +32,7 @@ declare global {
         }) => void,
       ) => () => void;
 
-      // Renderer OTA (M9)
+      // Renderer OTA
       rendererOta: {
         notifyReady: () => void;
         checkNow: () => Promise<{ status: string; version?: string; error?: string }>;

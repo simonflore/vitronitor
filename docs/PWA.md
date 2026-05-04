@@ -1,11 +1,11 @@
-# PWA + Service Worker (M4)
+# PWA + Service Worker
 
 The web target is a Progressive Web App. The SW pre-caches the SPA shell,
 serves a structured offline response for `/api/*` failures, and gives the
 user a reload prompt when a new build is deployed.
 
 Mutations do **not** use the Background Sync API — the offline-write path
-is the Electric Write-Ahead Log + the mutation queue processor (M3),
+is the Electric Write-Ahead Log + the mutation queue processor,
 which works identically on web, Capacitor, and Electron and persists
 through full app crashes (Background Sync only runs while the page is
 in scope).
@@ -52,7 +52,7 @@ event and call `prompt()` on it.
 ## Notable design choices
 
 - **No background-sync mutation queue** — see the rationale at the top.
-- **No push notifications** in M4. Push requires VAPID keys + a server
+- **No push notifications**. Push requires VAPID keys + a server
   endpoint to manage subscriptions. Add when needed by wiring `push` +
   `notificationclick` handlers into `public/sw.js`.
 - **Auth pages** are not pre-cached so a stale SPA shell can't serve a

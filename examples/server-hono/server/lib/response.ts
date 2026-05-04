@@ -5,7 +5,7 @@
  *   success: { ok: true,  data: T }
  *   error:   { ok: false, error: string, code?: string }
  *
- * The client unwraps `data` automatically (see lib/api-client.ts in M3).
+ * The client unwraps `data` automatically (see lib/api-client.ts).
  */
 
 import type { Context } from 'hono';

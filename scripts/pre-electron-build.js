@@ -31,7 +31,7 @@ if (!fs.existsSync(DIST_INDEX)) {
 // Modules used by electron/main/** at runtime, plus their transitive runtime deps.
 // Keep this list exhaustive — electron-builder won't auto-trace them.
 const electronModules = [
-  // electron-updater (M8) + its transitive runtime deps used at update time.
+  // electron-updater + its transitive runtime deps used at update time.
   // electron-builder doesn't trace these from electron/main/**.
   'electron-updater',
   'builder-util-runtime',
@@ -46,7 +46,7 @@ const electronModules = [
   'lodash.isequal',
   'sax',
   'semver',
-  // M9 — renderer-OTA needs extract-zip + transitive deps for bundle install.
+  // renderer-OTA needs extract-zip + transitive deps for bundle install.
   'extract-zip',
   'get-stream',
   'pump',

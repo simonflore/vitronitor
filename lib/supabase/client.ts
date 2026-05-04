@@ -2,8 +2,9 @@
  * Browser-side Supabase client (singleton).
  *
  * Uses @supabase/supabase-js directly. Auth state is persisted to localStorage
- * by default. M5+ wires native storage adapters (Capacitor Preferences /
- * Electron safeStorage) so sessions survive WebView eviction on device.
+ * by default. On native, this client wires native storage adapters
+ * (Capacitor Preferences / Electron safeStorage) so sessions survive WebView
+ * eviction on device.
  */
 
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';

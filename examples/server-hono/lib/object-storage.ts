@@ -2,8 +2,8 @@
  * S3-compatible storage client.
  *
  * Works against AWS S3, Cloudflare R2, MinIO, and Garage. The OTA pipelines
- * (M6 = iOS Capgo, M8 = Electron shell, M9 = Electron renderer) all read +
- * write through this module.
+ * (iOS Capgo, Electron shell, Electron renderer) all read + write through
+ * this module.
  *
  * Garage quirk:
  *   AWS SDK v3.600+ adds CRC32 checksums to every request by default. Garage

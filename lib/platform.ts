@@ -6,7 +6,7 @@
  *
  * Detection rules:
  *   - Capacitor: window.Capacitor?.isNativePlatform() === true
- *   - Electron:  window.electronAPI exists (set by electron/main/preload.ts in M7)
+ *   - Electron:  window.electronAPI exists (set by electron/main/preload.ts)
  *   - Web:       neither of the above
  */
 

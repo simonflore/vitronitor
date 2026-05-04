@@ -1,9 +1,9 @@
-# Electron desktop target (M7 → M9)
+# Electron desktop target
 
-The same React app runs as a desktop app via Electron. M7 wires up the shell
-(window, tray, IPC, build); M8 adds the auto-updater for the binary; M9
-adds the custom renderer OTA pipeline for shipping JS-only updates without
-a native release.
+The same React app runs as a desktop app via Electron. The shell layer
+provides the window, tray, IPC, and build pipeline; the auto-updater drives
+binary updates via electron-updater; the custom renderer OTA pipeline ships
+JS-only updates without a native release.
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ npm run electron:build -- --mac
 (Notarization happens via the `afterSign` hook — left for you to wire up
 once you have a Developer cert.)
 
-## What's wired up in M7
+## What's wired up in the shell
 
 - **Single-instance lock** — second launch focuses the existing window
   (essential for OAuth deep links to focus the app instead of opening a
@@ -72,11 +72,13 @@ Before shipping:
 - `electron/public/tray-icon.png` + `electron/public/icon.png` /
   `icon.ico` (placeholders; provide your own)
 
-## What's coming next
+## Update pipelines
 
-- **M8** — `electron/main/updater.ts` (auto-update the binary via
-  electron-updater) + `examples/server-hono/examples/server-hono/server/routes/electron-shell.ts` (Hono proxy that serves
-  `latest-mac.yml` / `.dmg` via presigned S3 redirects).
-- **M9** — `electron/main/renderer-ota.ts` (active/pending/candidate state
-  machine for hot-swapping the renderer bundle without touching the binary)
-  + `examples/server-hono/server/routes/electron-bundle.ts` (the manifest endpoint).
+- **Binary auto-update** — `electron/main/updater.ts` wraps
+  electron-updater; `examples/server-hono/server/routes/electron-shell.ts`
+  is the Hono proxy that serves `latest-mac.yml` / `.dmg` via presigned S3
+  redirects.
+- **Renderer OTA** — `electron/main/renderer-ota.ts` is the
+  active/pending/candidate state machine that hot-swaps the renderer bundle
+  without touching the binary; `examples/server-hono/server/routes/electron-bundle.ts`
+  is the manifest endpoint.

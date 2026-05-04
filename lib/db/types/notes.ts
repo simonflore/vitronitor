@@ -3,12 +3,12 @@
  *
  * Two shapes per entity:
  *   - DbNote   — snake_case, mirrors the Postgres column names exactly.
- *                Used by the Electric collection schema (M3) and by the
- *                code generator (scripts/generate-electric-schemas.ts) to
+ *                Used by the Electric collection schema and by the code
+ *                generator (scripts/generate-electric-schemas.ts) to
  *                produce Zod validators.
  *   - Note     — camelCase app-level type. Converters in
- *                lib/electric/collections/notes.ts (M3) translate between
- *                the two. UI code uses Note; sync layer uses DbNote.
+ *                lib/electric/collections/notes.ts translate between the
+ *                two. UI code uses Note; sync layer uses DbNote.
  */
 
 /** @public */

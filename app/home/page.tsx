@@ -24,7 +24,7 @@ export default function HomePage() {
       </header>
 
       <p className="mt-2 text-zinc-400">
-        Cross-platform offline-first React boilerplate. M3 wires the notes table to
+        Cross-platform offline-first React boilerplate. The notes table is wired to
         Electric for real-time sync + offline persistence.
       </p>
 

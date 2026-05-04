@@ -1,13 +1,13 @@
 /**
  * Electron main process entry point.
  *
- * What this does (M7):
+ * What this does:
  *   1. Single-instance lock — second launch focuses the existing window
  *   2. Custom URL scheme handler (myapp://...) for OAuth deep links
  *   3. BrowserWindow load: dev → http://localhost:5173, prod → file://dist/index.html
- *      (M9 swaps the prod path for the renderer-OTA resolver)
- *   4. Registers IPC: storage (Supabase auth backing) + updater (M8) +
- *      renderer-OTA (M9)
+ *      (the prod path is swapped for the renderer-OTA resolver when active)
+ *   4. Registers IPC: storage (Supabase auth backing) + auto-updater +
+ *      renderer-OTA
  *   5. Tray icon + minimal app menu
  */
 
