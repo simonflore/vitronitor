@@ -6,6 +6,36 @@ setup uses **Electric Cloud**, but you can self-host the Electric source —
 the only thing the boilerplate cares about is `ELECTRIC_API_URL` +
 `ELECTRIC_SOURCE_ID` + `ELECTRIC_SOURCE_SECRET`.
 
+## Scope: what Electric does, and what it doesn't
+
+Electric is a **read-path sync engine**. It streams rows out of Postgres into
+local replicas, period. It does not handle the write path (queueing, retry,
+local persistence of pending mutations, crash survival) and it does not
+prescribe a client-side persistence layer — those are explicitly out of scope
+upstream. See Electric's own [writes guide](https://electric-sql.com/docs/guides/writes)
+for the canonical statement.
+
+Vitronitor fills the missing half itself. The write path lives under
+[`lib/electric/`](../lib/electric):
+
+| Concern | Where |
+|---|---|
+| Persist optimistic writes locally | `mutation-wal.ts` (IndexedDB-backed Write-Ahead Log) |
+| Drain pending writes when network returns | `mutation-queue-processor.ts` |
+| Hydrate live collections from disk on boot | `storage/persistence-adapter.ts` + `storage/indexeddb-persistence-adapter.ts` |
+| Resolve conflicts / soft-delete | `collections/factory.ts` (`createOrgScopedCollection`) |
+
+So when this repo says "offline-first," the offline write engine is **ours**,
+not Electric's. Electric handles "the network came back, here are the new
+server rows." The WAL handles "the network was gone, here are the writes I
+made locally that still need to ship."
+
+> **TanStack DB 0.6 overlap (March 2026).** TanStack DB now ships first-party
+> persistence (and `includes`). That overlaps with `lib/electric/storage/` —
+> we may be able to delete code there. The mutation WAL itself goes further
+> than what TanStack DB ships and is still load-bearing. Tracked as a
+> follow-up; the current PersistenceAdapter still works.
+
 ## 1. Provision an Electric source
 
 ### Option A — Electric Cloud (fastest)

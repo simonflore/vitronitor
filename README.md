@@ -1,14 +1,16 @@
 # Vitronitor
 
-**Cross-platform offline-first React boilerplate** — web (PWA) + iOS + Android + Electron, with ElectricSQL + TanStack DB sync, custom self-hosted OTA pipelines, and a Hono reference backend (swappable for any HTTP framework).
+**One React codebase → web + iOS + Android + Electron, offline-first via a custom mutation Write-Ahead Log.** [ElectricSQL](https://electric-sql.com) streams Postgres rows into a local [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) replica (the read path); the write-path queue, drain, and crash-survival are Vitronitor's own. Plus self-hosted OTA on all four targets and a Hono reference backend, swappable for any HTTP framework. MIT.
 
 ## What makes this different
 
-Most cross-platform starters give you one of these. Vitronitor gives you all three:
+Most cross-platform starters give you exactly one of these. Vitronitor wires all three together as a working app you can clone and run:
 
-1. **Native-feel** — Capacitor for iOS/Android with a custom-plugin pattern, Electron with system tray, deep-link handler, and IPC-backed safeStorage auth. Not a thin web wrapper.
-2. **Offline-first by default** — ElectricSQL syncs Postgres into a local IndexedDB (web/native) replica. Mutations queue when offline (Write-Ahead Log on every platform; Service Worker fallback for web shell caches), drain on reconnect, survive crashes. The app keeps working when the network drops.
-3. **Self-hosted OTA** for both iOS (Capgo, self-hosted) and Electron (custom shell auto-updater + custom renderer state machine). Ship JS updates as fast as you ship to the web — no Capgo Cloud, no EAS Update, no GitHub Releases dependency. You own the publish-sign-serve-verify loop.
+1. **Offline-first via a custom mutation Write-Ahead Log** — every write persists to [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) before it leaves the client. The WAL drains on reconnect, survives full app crashes (not just tab closes), and runs identically on web, iOS, Android, and Electron. This is the offline engine that [ElectricSQL](https://electric-sql.com) — read-path only by design — explicitly doesn't ship. It's the original engineering in this repo, under [`lib/electric/`](./lib/electric) (`mutation-wal`, `mutation-queue-processor`, `storage/`). [TanStack DB](https://tanstack.com/db) sits on top for live queries.
+2. **Self-hosted OTA across all four targets** — iOS via self-hosted [Capgo](https://capgo.app), Electron via a custom shell auto-updater + a renderer-only state machine, web via Service Worker. One signing key, one S3-compatible bucket, one `publish → sign → serve → verify` loop you fully own. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Ship JS updates as fast as you ship to the web.
+3. **Real native shell on every platform** — [Capacitor](https://capacitorjs.com) for iOS/Android with a custom-plugin pattern, **raw [Electron](https://www.electronjs.org) for desktop** (not the Capacitor-Community-Electron wrapper, which loses tray, multi-window, IPC depth, safeStorage). Two purpose-built native shells sharing one Vite/React renderer. System tray, deep-link handler, single-instance lock, IPC-backed safeStorage auth — Electron as Electron, not as a Capacitor flavour.
+
+> **The read-path engine is a thin seam.** ElectricSQL is the default because the source streams over plain HTTP through any CDN and the open edition is structurally first-class — perfect for self-hosted, solo-dev ops budgets. The swap point is [`lib/electric/collections/factory.ts`](./lib/electric/collections/factory.ts); the WAL above it is engine-agnostic.
 
 The reference stack is **Vite + React 19 + Tailwind v4 + Hono + Supabase + S3-compatible storage**. The backend framework, auth provider, and object store are all swappable — see [`docs/BACKEND_CONTRACTS.md`](./docs/BACKEND_CONTRACTS.md) for the HTTP+JSON contracts a backend has to satisfy. Compatible with **Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js API routes — or PHP, Python, Ruby, Go, Rust, .NET**.
 

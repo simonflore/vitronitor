@@ -179,10 +179,20 @@ sequenceDiagram
   in dev, prod (Hono-served), Capacitor (`capacitor://localhost`), and
   Electron (`file://`) without server-side routing config or build-time
   base URL games.
-- **Electric WAL on every platform** — even on web, mutations route through
-  the IndexedDB-backed WAL instead of relying on the Service Worker's
-  Background Sync API. Same code path everywhere; survives full app
-  crashes, not just tab closes.
+- **Raw Electron, not Capacitor-Community-Electron** — Capacitor technically
+  targets desktop via the Community Electron platform, but it's a thin
+  wrapper around Electron that gives you a Capacitor-flavoured app, not a
+  real Electron one: tray + multi-window + deep IPC + safeStorage + native
+  Node modules in the main process all become second-class. Vitronitor
+  builds its own Electron shell (`electron/main/`) and shares only the
+  Vite/React renderer with Capacitor. Two purpose-built native shells, one
+  renderer — more code, but Electron stays Electron.
+- **Mutation WAL on every platform** — even on web, mutations route through
+  Vitronitor's own IndexedDB-backed Write-Ahead Log instead of relying on
+  the Service Worker's Background Sync API. The WAL is *not* an Electric
+  feature — Electric is read-path sync only; the write path is ours. Same
+  code path everywhere; survives full app crashes, not just tab closes.
+  See [ELECTRIC.md](./ELECTRIC.md#scope-what-electric-does-and-what-it-doesnt).
 - **SPA shell for prod** — Hono serves `dist/` with a `*` fallback to
   `index.html`. Electron uses the same `index.html` via the renderer-OTA
   resolver in production.
