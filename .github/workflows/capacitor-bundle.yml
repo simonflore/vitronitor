@@ -1,0 +1,95 @@
+name: Capgo OTA Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+  workflow_dispatch: {}
+
+env:
+  NODE_VERSION: '22'
+
+concurrency:
+  group: capgo-ota
+  cancel-in-progress: true
+
+jobs:
+  publish-ota:
+    name: Publish OTA bundle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Compute OTA version
+        id: version
+        run: |
+          # major.minor from package.json + git commit count as patch.
+          # Always increases, no manual bumps needed for OTA-only ships.
+          BASE=$(node -p "require('package.json').version.split('.').slice(0,2).join('.')")
+          COMMITS=$(git rev-list --count HEAD)
+          OTA_VERSION="${BASE}.${COMMITS}"
+          echo "ota_version=$OTA_VERSION" >> "$GITHUB_OUTPUT"
+
+      - run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - name: Write Capgo signing key
+        env:
+          CAPGO_PRIVATE_KEY: ${{ secrets.CAPGO_PRIVATE_KEY_V2 }}
+        run: echo "$CAPGO_PRIVATE_KEY" > .capgo_key_v2
+
+      - name: Install AWS CLI
+        run: |
+          if ! command -v aws >/dev/null; then
+            curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscli.zip
+            unzip -q /tmp/awscli.zip -d /tmp
+            sudo /tmp/aws/install --update
+          fi
+
+      - name: Publish OTA bundle
+        env:
+          OTA_VERSION: ${{ steps.version.outputs.ota_version }}
+          APP_ID: ${{ vars.APP_ID }}                       # repo variable
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_RELEASES_BUCKET: ${{ vars.S3_RELEASES_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: bash scripts/publish-capacitor-bundle.sh
+
+      - name: Clean up old bundles (keep latest 20)
+        env:
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_RELEASES_BUCKET: ${{ vars.S3_RELEASES_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          BUCKET="${S3_RELEASES_BUCKET:?S3_RELEASES_BUCKET is required}"
+          aws s3 ls "s3://${BUCKET}/capacitor/bundle/" --endpoint-url "$S3_ENDPOINT" \
+            | awk '/PRE / {print $2}' | sort -V | head -n -20 \
+            | while read -r dir; do
+                aws s3 rm "s3://${BUCKET}/capacitor/bundle/${dir}" --recursive --endpoint-url "$S3_ENDPOINT"
+              done
