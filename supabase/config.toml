@@ -1,0 +1,11 @@
+# Minimal Supabase CLI config. Run `npx supabase init` to regenerate fully if you
+# need the local development stack (db, auth, storage, edge functions).
+#
+# For the boilerplate the only commands needed are:
+#   npx supabase login
+#   npx supabase link --project-ref <your-project-ref>
+#   npx supabase db push      # applies migrations under supabase/migrations/
+#
+# See docs/SUPABASE.md for the full setup walkthrough.
+
+project_id = "vitronitor"
