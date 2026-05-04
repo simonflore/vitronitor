@@ -6,7 +6,7 @@
   const pageEl = document.getElementById("page");
 
   const bootLines = [
-    "VITRONITOR-9000 // boot sequence v9.0.0",
+    "VITRONITOR // boot sequence v1.0",
     "[ OK ] memory replica .......... attached",
     "[ OK ] sync engine ............. armed",
     "[ OK ] ota signing key ......... verified",
