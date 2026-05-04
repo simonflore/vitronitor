@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0a" />
     <title>VITRONITOR // diagnostic readout</title>
-    <meta name="description" content="Vitronitor: a React boilerplate that ships one codebase to web, iOS, Android, and Electron — offline-first via a custom mutation Write-Ahead Log on top of ElectricSQL read-path sync, with self-hosted OTA pipelines you fully own." />
+    <meta name="description" content="Vitronitor: a React boilerplate with self-hosted OTA across web, iOS, Android, and Electron — one signing key, no EAS Update, no Capgo Cloud, no GitHub Releases. Offline-first via a custom mutation WAL on top of ElectricSQL read-path sync." />
     <meta property="og:title" content="VITRONITOR" />
-    <meta property="og:description" content="Offline-first React boilerplate built on a custom mutation WAL. Web, iOS, Android, and Electron from one codebase, with self-hosted OTA on all four." />
+    <meta property="og:description" content="Self-hosted OTA across web, iOS, Android, and Electron from one React codebase. Offline-first via a custom mutation WAL." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -51,7 +51,7 @@
               <span class="hl">iOS</span>,
               <span class="hl">Android</span>,
               <span class="hl">Electron</span>.
-              <br />Offline-first via a custom mutation WAL. Self-hosted OTA on all four.<span class="cursor" aria-hidden="true">▌</span>
+              <br />Self-hosted OTA on all four. Offline-first via a custom mutation WAL.<span class="cursor" aria-hidden="true">▌</span>
             </p>
             <div class="cta-row">
               <a class="btn btn-primary" href="https://github.com/simonflore/vitronitor" target="_blank" rel="noopener">
@@ -77,10 +77,13 @@
             <strong>Vitronitor is a React boilerplate</strong> that ships one codebase to four targets — web (PWA), iOS, Android, and Electron — and keeps every one of them working when the network drops.
           </p>
           <p>
-            Most cross-platform starters give you exactly <em>one</em> of these: a real offline-first write engine, native-feel UX, or self-hosted update pipelines. Vitronitor ships <strong>all three</strong>, wired together as a working app you can clone and run today.
+            The headline differentiator is the <strong>self-hosted OTA pipeline across all four targets</strong>. Push JS-only updates without an app-store review or a forced restart, on web + iOS + Android + Electron, with one signing key and zero vendor lock-in. No EAS Update, no Capgo Cloud, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket. The full <code>publish → sign → serve → verify</code> loop is yours.
           </p>
           <p>
-            The original engineering is the offline write engine: a custom mutation Write-Ahead Log that persists every write to <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener">IndexedDB</a>, drains on reconnect, and survives full app crashes — on every platform. <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> handles the read path (<a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> rows → IndexedDB replica) and is a thin seam you could swap. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries. The native shells are <a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> for iOS/Android and <strong>raw <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> for desktop</strong> (with tray, IPC, and safeStorage — not the Capacitor-Electron wrapper). Built on <a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a> + <a href="https://react.dev" target="_blank" rel="noopener">React 19</a> + <a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind v4</a>. Reference backend is <a href="https://hono.dev" target="_blank" rel="noopener">Hono</a> + <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> + S3-compatible storage — all swappable. MIT.
+            The other genuine engineering is the <strong>offline write engine</strong>: a custom mutation Write-Ahead Log that persists every write to <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener">IndexedDB</a>, drains on reconnect, and survives full app crashes — on every platform. <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> handles the read path (<a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> rows → IndexedDB replica) and is a thin seam — swap it for PowerSync, <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> 0.6's offline-transactions, or your own. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries.
+          </p>
+          <p>
+            Native shells are <a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> for iOS/Android and <strong>raw <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> for desktop</strong> (with tray, IPC, and safeStorage — not the Capacitor-Electron wrapper). Built on <a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a> + <a href="https://react.dev" target="_blank" rel="noopener">React 19</a> + <a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind v4</a>. Reference backend is <a href="https://hono.dev" target="_blank" rel="noopener">Hono</a> + <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> + S3-compatible storage — all swappable. MIT.
           </p>
         </div>
       </section>
@@ -96,19 +99,19 @@
           <li class="pillar">
             <div class="pillar-head">
               <span class="pillar-pip" aria-hidden="true">●</span>
-              <span class="pillar-label">OFFLINE_WAL</span>
+              <span class="pillar-label">OTA_PIPELINE</span>
             </div>
             <p class="pillar-log">
-              Every write persists to IndexedDB <em>before</em> it leaves the client. The custom mutation Write-Ahead Log drains on reconnect, survives full app crashes (not just tab closes), and runs identically on web, iOS, Android, and Electron. This is the offline engine that <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> — read-path only by design — explicitly doesn't ship; the original engineering in this repo. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries. Reference example: a notes table with full CRUD + RLS + soft-delete.
+              Push JS-only updates without an app-store review or a forced restart — across all four targets. iOS uses self-hosted <a href="https://capgo.app" target="_blank" rel="noopener">Capgo</a>; Electron uses a custom shell auto-updater plus a renderer state machine; web ships through the Service Worker. One signing key signs them all. You own the full <code>publish → sign → serve → verify</code> loop. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket. The rare, durable differentiator — every other piece of this stack is increasingly commoditized; this one isn't.
             </p>
           </li>
           <li class="pillar">
             <div class="pillar-head">
               <span class="pillar-pip" aria-hidden="true">●</span>
-              <span class="pillar-label">OTA_PIPELINE</span>
+              <span class="pillar-label">OFFLINE_WAL</span>
             </div>
             <p class="pillar-log">
-              Push JS-only updates without an app-store review or a forced restart — across all four targets. iOS uses self-hosted <a href="https://capgo.app" target="_blank" rel="noopener">Capgo</a>; Electron uses a custom shell auto-updater plus a renderer state machine; web ships through the Service Worker. One signing key signs them all. You own the full <code>publish → sign → serve → verify</code> loop. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket.
+              Every write persists to IndexedDB <em>before</em> it leaves the client. The custom mutation Write-Ahead Log drains on reconnect, survives full app crashes (not just tab closes), and runs identically on web, iOS, Android, and Electron. This is the offline engine that <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> — read-path only by design — explicitly doesn't ship. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries. The whole offline layer is a swappable seam — drop in PowerSync or TanStack DB 0.6's offline-transactions if you'd rather not own it. Reference example: a notes table with full CRUD + RLS + soft-delete.
             </p>
           </li>
           <li class="pillar">
