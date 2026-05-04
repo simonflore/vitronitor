@@ -1,0 +1,46 @@
+node_modules
+dist
+dist-electron
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+
+# OTA signing keys — never commit
+.capgo_key_v2
+*.pem
+
+# Build output
+electron/dist
+ios/App/App/public
+android/app/src/main/assets/public
+
+# Capacitor / iOS / Android local artifacts
+ios/App/Pods
+ios/App/Podfile.lock
+ios/App/build
+android/.gradle
+android/app/build
+android/build
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+*.p8
+*.mobileprovision
+
+# Ruby/Bundler
+.bundle
+vendor/bundle
+
+# Editor / OS
+.vscode
+.idea
+.cache
+.turbo
+*.tsbuildinfo
+
+# Tests
+coverage
