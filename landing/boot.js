@@ -53,63 +53,9 @@
   }
 
   function initInteractions() {
-    initGauges();
     initUptime();
     initCopy();
     initEasterEgg();
-  }
-
-  // Gauges fill on scroll-into-view
-  function initGauges() {
-    const gauges = document.querySelectorAll(".gauge");
-    gauges.forEach((g) => {
-      const target = parseInt(g.dataset.value || "0", 10);
-      g.style.setProperty("--target", target + "%");
-    });
-
-    const valueEls = (g) => g.querySelector(".gauge-value");
-
-    const animateValue = (g) => {
-      const target = parseInt(g.dataset.value || "0", 10);
-      const el = valueEls(g);
-      if (reduceMotion) {
-        el.textContent = String(target).padStart(3, "0") + "%";
-        return;
-      }
-      const start = performance.now();
-      const dur = 1200;
-      const step = (now) => {
-        const t = Math.min(1, (now - start) / dur);
-        const v = Math.floor(target * (1 - Math.pow(1 - t, 3)));
-        el.textContent = String(v).padStart(3, "0") + "%";
-        if (t < 1) requestAnimationFrame(step);
-        else el.textContent = String(target).padStart(3, "0") + "%";
-      };
-      requestAnimationFrame(step);
-    };
-
-    if (!("IntersectionObserver" in window) || reduceMotion) {
-      gauges.forEach((g) => {
-        g.classList.add("tick");
-        animateValue(g);
-      });
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const g = e.target;
-            g.classList.add("tick");
-            animateValue(g);
-            io.unobserve(g);
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-    gauges.forEach((g) => io.observe(g));
   }
 
   // Uptime ticker

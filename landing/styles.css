@@ -245,21 +245,6 @@ a:hover {
 }
 .btn-ghost:hover .bracket { color: var(--crt-cyan); }
 
-.micro {
-  color: var(--fg-dim);
-  font-size: 12px;
-  margin: 6px 0 0;
-}
-.micro kbd {
-  font-family: var(--mono);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 1px 6px;
-  border-radius: 3px;
-  color: var(--crt-green);
-  font-size: 11px;
-}
-
 /* Panels */
 .panel {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent), var(--panel);
@@ -320,59 +305,45 @@ a:hover {
   50% { opacity: 0.35; }
 }
 
-/* Vital signs */
-.gauges {
+/* Vital signs (pillars) */
+.pillars {
   list-style: none;
   margin: 0;
   padding: 18px 16px 22px;
   display: grid;
   gap: 18px;
 }
-.gauge-row {
+.pillar {
+  padding: 4px 0 4px 12px;
+  border-left: 2px solid var(--line-2);
+  transition: border-left-color 160ms ease;
+}
+.pillar:hover { border-left-color: var(--crt-green); }
+.pillar-head {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   font-size: 13px;
   letter-spacing: 0.04em;
 }
-.gauge-label {
-  color: var(--fg);
-  min-width: 18ch;
-}
-.gauge-dots {
-  flex: 1;
-  border-bottom: 1px dotted var(--line-2);
-  height: 1px;
-  transform: translateY(-3px);
-}
-.gauge-value {
+.pillar-pip {
   color: var(--crt-green);
-  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.55);
+  font-size: 10px;
+  line-height: 1;
 }
-.bar {
-  margin-top: 6px;
-  height: 10px;
-  background: #07070a;
-  border: 1px solid var(--line);
-  position: relative;
-  overflow: hidden;
+.pillar-label {
+  color: var(--fg);
+  letter-spacing: 0.12em;
 }
-.bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--crt-cyan));
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.55);
-  transition: width 1.4s cubic-bezier(.2,.8,.2,1);
-}
-.gauge.tick .bar-fill { width: var(--target, 0%); }
-.gauge-log {
-  margin: 8px 0 0;
+.pillar-log {
+  margin: 6px 0 0;
   color: var(--fg-dim);
   font-size: 13px;
   line-height: 1.6;
   max-width: 78ch;
 }
-.gauge-log code {
+.pillar-log code {
   font-family: var(--mono);
   background: rgba(99, 102, 241, 0.12);
   border: 1px solid var(--line);
@@ -380,6 +351,63 @@ a:hover {
   border-radius: 2px;
   color: var(--fg);
   font-size: 12px;
+}
+
+/* Bundled systems logo wall */
+.logo-grid {
+  list-style: none;
+  margin: 0;
+  padding: 18px 16px 22px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+@media (max-width: 720px) { .logo-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 420px) { .logo-grid { grid-template-columns: repeat(2, 1fr); } }
+.logo-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 8px;
+  min-height: 96px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--fg-dim);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  transition: color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.logo-tile:hover {
+  color: var(--fg);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.18);
+}
+.logo-tile img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: grayscale(1) brightness(1.6) opacity(0.75);
+  transition: filter 200ms ease;
+}
+.logo-tile:hover img { filter: none; }
+.logo-mono {
+  font-size: 28px;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-dim);
+  transition: color 160ms ease;
+}
+.logo-tile:hover .logo-mono { color: var(--crt-cyan); }
+.logo-name {
+  font-size: 11px;
+  letter-spacing: 0.12em;
 }
 
 /* Prose blocks inside panels (pitch, etc.) */
@@ -624,5 +652,4 @@ a:hover {
     transition-duration: 0.001ms !important;
   }
   .scanlines { display: none; }
-  .gauge .bar-fill { transition: none; width: var(--target, 0%); }
 }

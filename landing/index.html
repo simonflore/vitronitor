@@ -61,7 +61,6 @@
                 <span class="bracket">[</span> READ THE DOCS <span class="bracket">]</span>
               </a>
             </div>
-            <p class="micro">tip: try typing <kbd>vitals</kbd> on this page.</p>
           </div>
         </div>
       </header>
@@ -81,61 +80,53 @@
             Most cross-platform starters give you exactly <em>one</em> of these: native-feel UX, real offline-first sync, or self-hosted update pipelines. Vitronitor ships <strong>all three</strong>, wired together as a working app you can clone and run today.
           </p>
           <p>
-            It's built on <strong>Vite + React 19 + Tailwind v4</strong>, with <strong>ElectricSQL</strong> replicating Postgres into IndexedDB, <strong>TanStack DB</strong> for live queries and an offline mutation queue, <strong>Capacitor</strong> for iOS/Android, and <strong>Electron</strong> with system-tray + IPC. Reference backend is <strong>Hono + Supabase + S3-compatible storage</strong> — all swappable. MIT licensed.
+            It's built on <a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a> + <a href="https://react.dev" target="_blank" rel="noopener">React 19</a> + <a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind v4</a>, with <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> replicating <a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> into <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener">IndexedDB</a>, <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> for live queries and an offline mutation queue, <a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> for iOS/Android, and <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> with system-tray + IPC. Reference backend is <a href="https://hono.dev" target="_blank" rel="noopener">Hono</a> + <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> + S3-compatible storage — all swappable. MIT licensed.
           </p>
         </div>
       </section>
 
-      <!-- Vital Signs panel: animated gauges -->
+      <!-- Vital Signs: four core pillars -->
       <section class="panel vitals" aria-labelledby="vitals-h">
         <div class="panel-head">
           <span class="dot dot-green"></span>
           <h2 id="vitals-h">VITAL_SIGNS</h2>
-          <span class="panel-meta">readout/v1</span>
+          <span class="panel-meta">core pillars</span>
         </div>
-        <ul class="gauges" id="gauges">
-          <li class="gauge" data-value="100">
-            <div class="gauge-row">
-              <span class="gauge-label">OFFLINE_SYNC</span>
-              <span class="gauge-dots" aria-hidden="true"></span>
-              <span class="gauge-value">000%</span>
+        <ul class="pillars">
+          <li class="pillar">
+            <div class="pillar-head">
+              <span class="pillar-pip" aria-hidden="true">●</span>
+              <span class="pillar-label">OFFLINE_SYNC</span>
             </div>
-            <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">
-              ElectricSQL replicates your Postgres tables into a local IndexedDB replica on every platform. Mutations queue in a Write-Ahead Log when offline, drain on reconnect, and survive crashes. TanStack DB sits on top with live queries, so the UI updates the moment a row changes — locally or remotely. The reference example is a notes table with full CRUD + RLS + soft-delete.
+            <p class="pillar-log">
+              <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> replicates your Postgres tables into a local IndexedDB replica on every platform. Mutations queue in a Write-Ahead Log when offline, drain on reconnect, and survive crashes. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top with live queries, so the UI updates the moment a row changes — locally or remotely. The reference example is a notes table with full CRUD + RLS + soft-delete.
             </p>
           </li>
-          <li class="gauge" data-value="98">
-            <div class="gauge-row">
-              <span class="gauge-label">OTA_PIPELINE</span>
-              <span class="gauge-dots" aria-hidden="true"></span>
-              <span class="gauge-value">000%</span>
+          <li class="pillar">
+            <div class="pillar-head">
+              <span class="pillar-pip" aria-hidden="true">●</span>
+              <span class="pillar-label">OTA_PIPELINE</span>
             </div>
-            <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">
-              Push JS-only updates without an app-store review or a forced restart. iOS uses self-hosted Capgo; Electron uses a custom shell auto-updater plus a renderer state machine. You own the full <code>publish → sign → serve → verify</code> loop. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket.
+            <p class="pillar-log">
+              Push JS-only updates without an app-store review or a forced restart. iOS uses self-hosted <a href="https://capgo.app" target="_blank" rel="noopener">Capgo</a>; Electron uses a custom shell auto-updater plus a renderer state machine. You own the full <code>publish → sign → serve → verify</code> loop. No Capgo Cloud, no EAS Update, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket.
             </p>
           </li>
-          <li class="gauge" data-value="100">
-            <div class="gauge-row">
-              <span class="gauge-label">NATIVE_SHELL</span>
-              <span class="gauge-dots" aria-hidden="true"></span>
-              <span class="gauge-value">000%</span>
+          <li class="pillar">
+            <div class="pillar-head">
+              <span class="pillar-pip" aria-hidden="true">●</span>
+              <span class="pillar-label">NATIVE_SHELL</span>
             </div>
-            <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">
-              Capacitor 8 with a custom-plugin pattern handles iOS and Android, including native network and auth bridges. Electron 41 ships with a system tray, deep-link handler, IPC layer, and safeStorage-backed credential storage. It is a real native shell, not a thin web wrapper — you get keyboard shortcuts, OS integration, and offline launch out of the box.
+            <p class="pillar-log">
+              <a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> 8 with a custom-plugin pattern handles iOS and Android, including native network and auth bridges. <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> 41 ships with a system tray, deep-link handler, IPC layer, and safeStorage-backed credential storage. It is a real native shell, not a thin web wrapper — you get keyboard shortcuts, OS integration, and offline launch out of the box.
             </p>
           </li>
-          <li class="gauge" data-value="100">
-            <div class="gauge-row">
-              <span class="gauge-label">BACKEND_AGNOSTIC</span>
-              <span class="gauge-dots" aria-hidden="true"></span>
-              <span class="gauge-value">000%</span>
+          <li class="pillar">
+            <div class="pillar-head">
+              <span class="pillar-pip" aria-hidden="true">●</span>
+              <span class="pillar-label">BACKEND_AGNOSTIC</span>
             </div>
-            <div class="bar"><div class="bar-fill"></div></div>
-            <p class="gauge-log">
-              The repo's reference server is Hono, but the client only assumes the HTTP+JSON contracts in <code>docs/BACKEND_CONTRACTS.md</code>. Implement them on Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js API routes, FastAPI, Rails, Go, Rust, .NET, PHP — anything. The auth provider (Supabase) and object store (S3-compatible) are also swappable.
+            <p class="pillar-log">
+              The repo's reference server is <a href="https://hono.dev" target="_blank" rel="noopener">Hono</a>, but the client only assumes the HTTP+JSON contracts in <code>docs/BACKEND_CONTRACTS.md</code>. Implement them on Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js API routes, FastAPI, Rails, Go, Rust, .NET, PHP — anything. The auth provider (<a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a>) and object store (S3-compatible) are also swappable.
             </p>
           </li>
         </ul>
@@ -151,32 +142,103 @@
         <ul class="stack-list">
           <li>
             <span class="stack-label">FRONTEND</span>
-            <span class="stack-value">Vite 8 · React 19 · Tailwind v4 · React Router 7 (hash routing for cross-platform)</span>
+            <span class="stack-value"><a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a> 8 · <a href="https://react.dev" target="_blank" rel="noopener">React</a> 19 · <a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind</a> v4 · <a href="https://reactrouter.com" target="_blank" rel="noopener">React Router</a> 7 (hash routing for cross-platform)</span>
           </li>
           <li>
             <span class="stack-label">SYNC</span>
-            <span class="stack-value">ElectricSQL (Postgres → IndexedDB) · TanStack DB (live queries · WAL mutation queue)</span>
+            <span class="stack-value"><a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> (Postgres → IndexedDB) · <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> (live queries · WAL mutation queue)</span>
           </li>
           <li>
             <span class="stack-label">NATIVE</span>
-            <span class="stack-value">Capacitor 8 (iOS · Android · custom plugin pattern) · Electron 41 (tray · IPC · safeStorage)</span>
+            <span class="stack-value"><a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> 8 (iOS · Android · custom plugin pattern) · <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> 41 (tray · IPC · safeStorage)</span>
           </li>
           <li>
             <span class="stack-label">OTA</span>
-            <span class="stack-value">Self-hosted Capgo for iOS · custom shell auto-updater + renderer state machine for Electron · S3-compatible bundle hosting</span>
+            <span class="stack-value">Self-hosted <a href="https://capgo.app" target="_blank" rel="noopener">Capgo</a> for iOS · custom shell auto-updater + renderer state machine for Electron · S3-compatible bundle hosting</span>
           </li>
           <li>
             <span class="stack-label">REFERENCE_BACKEND</span>
-            <span class="stack-value">Hono · Supabase auth · Postgres + RLS · Caddy fronting <code>/api</code> + Vite dev server (swappable)</span>
+            <span class="stack-value"><a href="https://hono.dev" target="_blank" rel="noopener">Hono</a> · <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> auth · <a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> + RLS · <a href="https://caddyserver.com" target="_blank" rel="noopener">Caddy</a> fronting <code>/api</code> + Vite dev server (swappable)</span>
           </li>
           <li>
             <span class="stack-label">VALIDATION</span>
-            <span class="stack-value">Zod schemas · codegen for Electric collections · TypeScript end-to-end</span>
+            <span class="stack-value"><a href="https://zod.dev" target="_blank" rel="noopener">Zod</a> schemas · codegen for Electric collections · <a href="https://www.typescriptlang.org" target="_blank" rel="noopener">TypeScript</a> end-to-end</span>
           </li>
           <li>
             <span class="stack-label">LICENSE</span>
             <span class="stack-value">MIT · open source · Node 22+</span>
           </li>
+        </ul>
+      </section>
+
+      <!-- Bundled systems: logo wall -->
+      <section class="panel logos" aria-labelledby="logos-h">
+        <div class="panel-head">
+          <span class="dot dot-cyan"></span>
+          <h2 id="logos-h">BUNDLED_SYSTEMS</h2>
+          <span class="panel-meta">deps · upstream</span>
+        </div>
+        <ul class="logo-grid">
+          <li><a class="logo-tile" href="https://react.dev" target="_blank" rel="noopener" aria-label="React">
+            <img src="https://cdn.simpleicons.org/react" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">React</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://vitejs.dev" target="_blank" rel="noopener" aria-label="Vite">
+            <img src="https://cdn.simpleicons.org/vite" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Vite</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://www.typescriptlang.org" target="_blank" rel="noopener" aria-label="TypeScript">
+            <img src="https://cdn.simpleicons.org/typescript" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">TypeScript</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://tailwindcss.com" target="_blank" rel="noopener" aria-label="Tailwind CSS">
+            <img src="https://cdn.simpleicons.org/tailwindcss" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Tailwind</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://reactrouter.com" target="_blank" rel="noopener" aria-label="React Router">
+            <img src="https://cdn.simpleicons.org/reactrouter" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">React Router</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://zod.dev" target="_blank" rel="noopener" aria-label="Zod">
+            <img src="https://cdn.simpleicons.org/zod" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Zod</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://electric-sql.com" target="_blank" rel="noopener" aria-label="ElectricSQL">
+            <img src="https://electric.ax/img/brand/logo.svg" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">ElectricSQL</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://tanstack.com/db" target="_blank" rel="noopener" aria-label="TanStack">
+            <img src="https://cdn.simpleicons.org/tanstack" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">TanStack</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://capacitorjs.com" target="_blank" rel="noopener" aria-label="Capacitor">
+            <img src="https://cdn.simpleicons.org/capacitor" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Capacitor</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://www.electronjs.org" target="_blank" rel="noopener" aria-label="Electron">
+            <img src="https://cdn.simpleicons.org/electron" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Electron</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://capgo.app" target="_blank" rel="noopener" aria-label="Capgo">
+            <img src="https://capgo.app/capgo_logo.webp" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Capgo</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://hono.dev" target="_blank" rel="noopener" aria-label="Hono">
+            <img src="https://cdn.simpleicons.org/hono" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Hono</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://supabase.com" target="_blank" rel="noopener" aria-label="Supabase">
+            <img src="https://cdn.simpleicons.org/supabase" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Supabase</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://www.postgresql.org" target="_blank" rel="noopener" aria-label="PostgreSQL">
+            <img src="https://cdn.simpleicons.org/postgresql" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">PostgreSQL</span>
+          </a></li>
+          <li><a class="logo-tile" href="https://caddyserver.com" target="_blank" rel="noopener" aria-label="Caddy">
+            <img src="https://cdn.simpleicons.org/caddy" alt="" loading="lazy" width="36" height="36" />
+            <span class="logo-name">Caddy</span>
+          </a></li>
         </ul>
       </section>
 
