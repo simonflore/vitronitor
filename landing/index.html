@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>VITRONITOR-9000 // diagnostic readout</title>
+    <meta name="description" content="Vitronitor: a cross-platform offline-first React boilerplate. Web, iOS, Android, Electron — sync, OTA, and native shells. Vitals monitored." />
+    <meta property="og:title" content="VITRONITOR-9000" />
+    <meta property="og:description" content="Cross-platform offline-first React boilerplate. Your apps' vitals, monitored across web, iOS, Android, and Electron." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <!-- Boot terminal: hidden after boot finishes -->
+    <div id="boot" class="boot" role="status" aria-live="polite">
+      <pre id="boot-log" aria-hidden="true"></pre>
+    </div>
+
+    <main id="page" class="page" hidden>
+      <header class="hero">
+        <div class="hero-grid">
+          <pre class="robot" aria-label="ASCII illustration of VITRONITOR-9000, a friendly monitoring droid">
+        ╭───────────────╮
+        │  ┌─┐     ┌─┐  │
+        │  │<span class="eye eye-l">●</span>│  ⌒  │<span class="eye eye-r">●</span>│  │
+        │  └─┘ \___/ └─┘ │
+        │   V I T R O N  │
+        ╰──┬─────────┬──╯
+           │ ▮ ▮ ▮ ▮ │
+        ╔══╧═════════╧══╗
+        ║  ▣  ▢  ▣  ▢   ║
+        ║ ───────────── ║
+        ║  ░ SYNC ░ OK  ║
+        ╚══╤═════════╤══╝
+           │         │
+          ─┴─       ─┴─
+          ╱ ╲       ╱ ╲</pre>
+
+          <div class="hero-text">
+            <p class="kicker">// UNIT-9000 // ONLINE</p>
+            <h1 class="wordmark" data-text="VITRONITOR">VITRONITOR</h1>
+            <p class="tagline">
+              Cross-platform offline-first React boilerplate.
+              <br />Your apps' vitals — monitored across
+              <span class="hl">web</span>,
+              <span class="hl">iOS</span>,
+              <span class="hl">Android</span>, and
+              <span class="hl">Electron</span>.<span class="cursor" aria-hidden="true">▌</span>
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="https://github.com/simonflore/vitronitor" target="_blank" rel="noopener">
+                <span class="bracket">[</span> INSPECT ON GITHUB <span class="bracket">]</span>
+              </a>
+              <a class="btn btn-ghost" href="https://github.com/simonflore/vitronitor#readme" target="_blank" rel="noopener">
+                <span class="bracket">[</span> READ THE DOCS <span class="bracket">]</span>
+              </a>
+            </div>
+            <p class="micro">tip: try typing <kbd>vitals</kbd> on this page.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Vital Signs panel: animated gauges -->
+      <section class="panel vitals" aria-labelledby="vitals-h">
+        <div class="panel-head">
+          <span class="dot dot-green"></span>
+          <h2 id="vitals-h">VITAL_SIGNS</h2>
+          <span class="panel-meta">readout/v9.000</span>
+        </div>
+        <ul class="gauges" id="gauges">
+          <li class="gauge" data-value="100">
+            <div class="gauge-row">
+              <span class="gauge-label">OFFLINE_SYNC</span>
+              <span class="gauge-dots" aria-hidden="true"></span>
+              <span class="gauge-value">000%</span>
+            </div>
+            <div class="bar"><div class="bar-fill"></div></div>
+            <p class="gauge-log">PG_REPLICA → IndexedDB · WAL drains on reconnect · TanStack DB live queries</p>
+          </li>
+          <li class="gauge" data-value="98">
+            <div class="gauge-row">
+              <span class="gauge-label">OTA_PIPELINE</span>
+              <span class="gauge-dots" aria-hidden="true"></span>
+              <span class="gauge-value">000%</span>
+            </div>
+            <div class="bar"><div class="bar-fill"></div></div>
+            <p class="gauge-log">self-hosted iOS (Capgo) · Electron renderer state machine · sign · serve · verify</p>
+          </li>
+          <li class="gauge" data-value="100">
+            <div class="gauge-row">
+              <span class="gauge-label">NATIVE_SHELL</span>
+              <span class="gauge-dots" aria-hidden="true"></span>
+              <span class="gauge-value">000%</span>
+            </div>
+            <div class="bar"><div class="bar-fill"></div></div>
+            <p class="gauge-log">Capacitor (iOS/Android) · Electron tray + IPC · safeStorage auth · deep links</p>
+          </li>
+          <li class="gauge" data-value="100">
+            <div class="gauge-row">
+              <span class="gauge-label">BACKEND_AGNOSTIC</span>
+              <span class="gauge-dots" aria-hidden="true"></span>
+              <span class="gauge-value">000%</span>
+            </div>
+            <div class="bar"><div class="bar-fill"></div></div>
+            <p class="gauge-log">Hono reference · Bun · Workers · Express · FastAPI · Rails · anything HTTP+JSON</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Platform grid -->
+      <section class="panel platforms" aria-labelledby="platforms-h">
+        <div class="panel-head">
+          <span class="dot dot-cyan"></span>
+          <h2 id="platforms-h">PLATFORM_MATRIX</h2>
+          <span class="panel-meta">4 of 4 ONLINE</span>
+        </div>
+        <ul class="grid">
+          <li class="card">
+            <pre class="card-icon" aria-hidden="true">┌─────┐
+│ www │
+└─────┘</pre>
+            <h3>WEB / PWA</h3>
+            <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
+            <p class="card-body">Vite + React 19. Service Worker queues mutations offline; drains on reconnect.</p>
+          </li>
+          <li class="card">
+            <pre class="card-icon" aria-hidden="true">┌─────┐
+│  ◔  │
+└──┬──┘</pre>
+            <h3>iOS</h3>
+            <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
+            <p class="card-body">Capacitor with custom plugins. Self-hosted Capgo OTA. Fastlane lanes included.</p>
+          </li>
+          <li class="card">
+            <pre class="card-icon" aria-hidden="true">┌─────┐
+│ /◣\ │
+└─────┘</pre>
+            <h3>ANDROID</h3>
+            <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
+            <p class="card-body">Capacitor shell, native network + auth bridges, same offline replica.</p>
+          </li>
+          <li class="card">
+            <pre class="card-icon" aria-hidden="true">┌─────┐
+│ ▣ ▣ │
+└─────┘</pre>
+            <h3>ELECTRON</h3>
+            <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
+            <p class="card-body">Tray + IPC + safeStorage. Shell auto-updater + custom renderer OTA.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Quick start -->
+      <section class="panel quickstart" aria-labelledby="qs-h">
+        <div class="panel-head">
+          <span class="dot dot-indigo"></span>
+          <h2 id="qs-h">BOOT_SEQUENCE</h2>
+          <span class="panel-meta">copy · paste · run</span>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
+            <span class="terminal-title">~ /vitronitor</span>
+            <button id="copy" class="copy-btn" type="button" aria-label="Copy commands">
+              <span data-copy-default>[ COPY ]</span>
+              <span data-copy-done hidden>[ COPIED // CHECKSUM OK ]</span>
+            </button>
+          </div>
+<pre id="snippet" class="snippet"><span class="prompt">$</span> git clone https://github.com/simonflore/vitronitor
+<span class="prompt">$</span> cd vitronitor
+<span class="prompt">$</span> bash scripts/setup.sh
+<span class="prompt">$</span> cp .env.example .env.local
+<span class="prompt">$</span> npm install --legacy-peer-deps
+<span class="prompt">$</span> bash scripts/setup-signing-key.sh
+<span class="prompt">$</span> npm run dev
+<span class="comment"># Vite SPA on :5173. Vitals nominal.</span></pre>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p>
+          <span class="foot-uptime">UPTIME: <span id="uptime">00:00:00</span></span>
+          <span class="foot-sep">·</span>
+          <a href="https://github.com/simonflore/vitronitor">github</a>
+          <span class="foot-sep">·</span>
+          <a href="https://github.com/simonflore/vitronitor/blob/main/docs/ARCHITECTURE.md">architecture</a>
+          <span class="foot-sep">·</span>
+          <a href="https://github.com/simonflore/vitronitor/blob/main/LICENSE">MIT</a>
+        </p>
+        <p class="foot-fine">VITRONITOR-9000 // open source // built by humans (probably)</p>
+      </footer>
+    </main>
+
+    <!-- Diagnostic overload overlay (easter egg) -->
+    <div id="overload" class="overload" hidden aria-hidden="true">
+      <div class="overload-text">DIAGNOSTIC OVERLOAD</div>
+    </div>
+
+    <script src="boot.js" defer></script>
+  </body>
+</html>
