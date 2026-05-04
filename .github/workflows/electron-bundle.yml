@@ -1,20 +1,22 @@
 name: Electron renderer OTA
 
 on:
-  push:
-    branches: [main]
-    paths:
-      # Renderer-only paths. NOTE: electron/main/** is intentionally NOT here
-      # — those changes need a full electron-builder release via the manual
-      # publish-electron-shell.sh script (Mac required for notarization).
-      - 'src/**'
-      - 'app/**'
-      - 'components/**'
-      - 'lib/**'
-      - 'public/**'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
+  # Manual-only while this repo is a template. When forking into a real app,
+  # re-enable the push trigger below. Renderer-only paths; electron/main/**
+  # is intentionally excluded — those need a full electron-builder release
+  # via publish-electron-shell.sh (Mac required for notarization).
+  #
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'src/**'
+  #     - 'app/**'
+  #     - 'components/**'
+  #     - 'lib/**'
+  #     - 'public/**'
+  #     - 'index.html'
+  #     - 'vite.config.ts'
+  #     - 'tsconfig.json'
   workflow_dispatch: {}
 
 env:

@@ -1,19 +1,22 @@
 name: Capgo OTA Release
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'app/**'
-      - 'components/**'
-      - 'lib/**'
-      - 'public/**'
-      - 'index.html'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
+  # Manual-only while this repo is a template. When forking into a real app,
+  # re-enable the push trigger below.
+  #
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'src/**'
+  #     - 'app/**'
+  #     - 'components/**'
+  #     - 'lib/**'
+  #     - 'public/**'
+  #     - 'index.html'
+  #     - 'package.json'
+  #     - 'package-lock.json'
+  #     - 'vite.config.ts'
+  #     - 'tsconfig.json'
   workflow_dispatch: {}
 
 env:
