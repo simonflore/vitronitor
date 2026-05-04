@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0a" />
     <title>VITRONITOR // diagnostic readout</title>
-    <meta name="description" content="Vitronitor: a React boilerplate with self-hosted OTA across web, iOS, Android, and Electron — one signing key, no EAS Update, no Capgo Cloud, no GitHub Releases. Offline-first via a custom mutation WAL on top of ElectricSQL read-path sync." />
+    <meta name="description" content="Vitronitor: a React boilerplate with self-hosted OTA across web, iOS, Android, and Electron — one signing key, no EAS Update, no Capgo Cloud, no GitHub Releases. Offline-first via TanStack DB + @tanstack/offline-transactions, wired across all four targets on OPFS and native SQLite." />
     <meta property="og:title" content="VITRONITOR" />
-    <meta property="og:description" content="Self-hosted OTA across web, iOS, Android, and Electron from one React codebase. Offline-first via a custom mutation WAL." />
+    <meta property="og:description" content="Self-hosted OTA across web, iOS, Android, and Electron from one React codebase. TanStack DB offline-first, wired across all four targets." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -51,7 +51,7 @@
               <span class="hl">iOS</span>,
               <span class="hl">Android</span>,
               <span class="hl">Electron</span>.
-              <br />Self-hosted OTA on all four. Offline-first via a custom mutation WAL.<span class="cursor" aria-hidden="true">▌</span>
+              <br />Self-hosted OTA on all four. TanStack DB offline-first, wired across all four.<span class="cursor" aria-hidden="true">▌</span>
             </p>
             <div class="cta-row">
               <a class="btn btn-primary" href="https://github.com/simonflore/vitronitor" target="_blank" rel="noopener">
@@ -80,7 +80,7 @@
             The headline differentiator is the <strong>self-hosted OTA pipeline across all four targets</strong>. Push JS-only updates without an app-store review or a forced restart, on web + iOS + Android + Electron, with one signing key and zero vendor lock-in. No EAS Update, no Capgo Cloud, no GitHub Releases dependency. Bundles ship to any S3-compatible bucket. The full <code>publish → sign → serve → verify</code> loop is yours.
           </p>
           <p>
-            The other genuine engineering is the <strong>offline write engine</strong>: a custom mutation Write-Ahead Log that persists every write to <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener">IndexedDB</a>, drains on reconnect, and survives full app crashes — on every platform. <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> handles the read path (<a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> rows → IndexedDB replica) and is a thin seam — swap it for PowerSync, <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> 0.6's offline-transactions, or your own. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries.
+            The other genuine work is the <strong>offline-first stack wired across all four targets</strong>: <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> 0.6 with <code>@tanstack/offline-transactions</code> as a unified mutation outbox, durable SQLite persistence on every platform — OPFS-backed wa-sqlite on web and Electron renderer (over a registered <code>app://</code> scheme so OPFS gets a real origin), native SQLite via <code>@capacitor-community/sqlite</code> on iOS and Android. Writes survive full app crashes; the outbox drains on reconnect with optimistic rollback on conflict. <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> handles the read path (<a href="https://www.postgresql.org" target="_blank" rel="noopener">Postgres</a> rows → local SQLite cache) and is a thin seam you can swap. The integration is the work; the pieces are first-party.
           </p>
           <p>
             Native shells are <a href="https://capacitorjs.com" target="_blank" rel="noopener">Capacitor</a> for iOS/Android and <strong>raw <a href="https://www.electronjs.org" target="_blank" rel="noopener">Electron</a> for desktop</strong> (with tray, IPC, and safeStorage — not the Capacitor-Electron wrapper). Built on <a href="https://vitejs.dev" target="_blank" rel="noopener">Vite</a> + <a href="https://react.dev" target="_blank" rel="noopener">React 19</a> + <a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind v4</a>. Reference backend is <a href="https://hono.dev" target="_blank" rel="noopener">Hono</a> + <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> + S3-compatible storage — all swappable. MIT.
@@ -108,10 +108,10 @@
           <li class="pillar">
             <div class="pillar-head">
               <span class="pillar-pip" aria-hidden="true">●</span>
-              <span class="pillar-label">OFFLINE_WAL</span>
+              <span class="pillar-label">OFFLINE_OUTBOX</span>
             </div>
             <p class="pillar-log">
-              Every write persists to IndexedDB <em>before</em> it leaves the client. The custom mutation Write-Ahead Log drains on reconnect, survives full app crashes (not just tab closes), and runs identically on web, iOS, Android, and Electron. This is the offline engine that <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> — read-path only by design — explicitly doesn't ship. <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> sits on top for live queries. The whole offline layer is a swappable seam — drop in PowerSync or TanStack DB 0.6's offline-transactions if you'd rather not own it. Reference example: a notes table with full CRUD + RLS + soft-delete.
+              Every write goes through <code>@tanstack/offline-transactions</code> — a unified mutation outbox, persisted to durable SQLite on every platform. OPFS-backed wa-sqlite on web and Electron renderer, native SQLite via <code>@capacitor-community/sqlite</code> on iOS and Android. Writes survive full app crashes, drain on reconnect, and roll back optimistically on 409 conflicts. <a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> handles the read path only — it explicitly doesn't ship a write-path solution; <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> 0.6 does, and it's wired here across all four targets. Reference example: a notes table with full CRUD + RLS + soft-delete.
             </p>
           </li>
           <li class="pillar">
@@ -149,7 +149,7 @@
           </li>
           <li>
             <span class="stack-label">SYNC</span>
-            <span class="stack-value"><a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> (Postgres → IndexedDB read-path) · custom mutation WAL (offline write-path · survives crashes) · <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> (live queries)</span>
+            <span class="stack-value"><a href="https://electric-sql.com" target="_blank" rel="noopener">ElectricSQL</a> (Postgres → local SQLite read-path) · <a href="https://tanstack.com/db" target="_blank" rel="noopener">TanStack DB</a> 0.6 + <code>@tanstack/offline-transactions</code> (live queries · unified offline outbox · 409 rollback) · OPFS wa-sqlite on web/Electron · <code>@capacitor-community/sqlite</code> on iOS/Android</span>
           </li>
           <li>
             <span class="stack-label">NATIVE</span>
@@ -214,7 +214,7 @@
 └─────┘</pre>
             <h3>WEB / PWA</h3>
             <p class="card-status">STATUS: <span class="ok">ONLINE</span></p>
-            <p class="card-body">Vite + React 19 SPA. Installable PWA with manifest + Service Worker. SW caches the shell and provides a fallback mutation queue for the rare cases the WAL can't reach IndexedDB.</p>
+            <p class="card-body">Vite + React 19 SPA. Installable PWA with manifest + Service Worker. SW caches the shell and asset bundles; offline writes go through OPFS-backed wa-sqlite via TanStack's offline outbox.</p>
           </li>
           <li class="card">
             <pre class="card-icon" aria-hidden="true">┌─────┐
