@@ -1,0 +1,16 @@
+# Match: encrypted certificate sync via a private git repo.
+# https://docs.fastlane.tools/actions/match/
+#
+# Set MATCH_GIT_URL to a private repo you control (commonly a `match-certs`
+# branch in this same repo, or a dedicated sibling repo). Match encrypts
+# certs/profiles with MATCH_PASSWORD before pushing.
+#
+# After cloning fresh:
+#   bundle exec fastlane match development
+#   bundle exec fastlane match appstore
+
+git_url(ENV['MATCH_GIT_URL'] || 'https://github.com/YOUR_ORG/YOUR_CERTS_REPO.git')
+storage_mode('git')
+type('appstore')
+app_identifier([ENV['APP_IDENTIFIER'] || 'com.example.app'])
+username(ENV['APPLE_ID'] || 'you@example.com')

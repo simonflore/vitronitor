@@ -1,0 +1,12 @@
+# App Store Connect identity. Replace placeholders with your values, or set
+# the same env vars in CI (Fastfile reads from ENV first).
+#
+#   APPLE_ID         your Apple ID email
+#   APP_IDENTIFIER   reverse-DNS bundle id (must match Capacitor + Xcode)
+#   ITC_TEAM_ID      App Store Connect team id (from Apple Developer Portal)
+#   TEAM_ID          Apple Developer Team ID (10-character string)
+
+apple_id(ENV['APPLE_ID'] || 'you@example.com')
+app_identifier(ENV['APP_IDENTIFIER'] || 'com.example.app')
+itc_team_id(ENV['ITC_TEAM_ID'] || 'YOUR_ITC_TEAM_ID')
+team_id(ENV['TEAM_ID'] || 'YOUR_TEAM_ID')
