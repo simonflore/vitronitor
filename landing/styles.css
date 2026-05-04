@@ -508,6 +508,7 @@ a:hover {
 .foot-fine { margin: 0; opacity: 0.7; }
 
 /* Diagnostic overload */
+.overload[hidden] { display: none; }
 .overload {
   position: fixed;
   inset: 0;
