@@ -24,8 +24,8 @@ export default function HomePage() {
       </header>
 
       <p className="mt-2 text-zinc-400">
-        Cross-platform offline-first React boilerplate. The notes table is wired to
-        Electric for real-time sync + offline persistence.
+        Cross-platform offline-first React boilerplate. The notes table syncs via
+        TanStack DB collections; writes route through an offline-transactions outbox.
       </p>
 
       {status === 'loading' && <p className="mt-6 text-sm text-zinc-500">Loading…</p>}

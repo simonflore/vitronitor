@@ -1,25 +1,26 @@
 import { RouterProvider } from 'react-router';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/lib/contexts/AuthContext';
 import { OrgProvider } from '@/lib/contexts/OrgContext';
 import { NetworkProvider } from '@/lib/contexts/NetworkContext';
-import { TanStackDbProvider } from '@/lib/electric/TanStackDbProvider';
-import { MutationQueueProcessorProvider } from '@/lib/electric/MutationQueueProcessorProvider';
+import { TanStackDbProvider } from '@/lib/sync/TanStackDbProvider';
 import { OfflineBanner } from '@/components/layout/OfflineBanner';
+import { queryClient } from '@/lib/query-client';
 import { router } from './router';
 
 export default function App() {
   return (
-    <NetworkProvider>
-      <AuthProvider>
-        <OrgProvider>
-          <TanStackDbProvider>
-            <MutationQueueProcessorProvider>
+    <QueryClientProvider client={queryClient}>
+      <NetworkProvider>
+        <AuthProvider>
+          <OrgProvider>
+            <TanStackDbProvider>
               <OfflineBanner />
               <RouterProvider router={router} />
-            </MutationQueueProcessorProvider>
-          </TanStackDbProvider>
-        </OrgProvider>
-      </AuthProvider>
-    </NetworkProvider>
+            </TanStackDbProvider>
+          </OrgProvider>
+        </AuthProvider>
+      </NetworkProvider>
+    </QueryClientProvider>
   );
 }

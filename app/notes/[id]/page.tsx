@@ -15,7 +15,7 @@ export default function NoteDetailPage() {
   // Hydrate local state from the synced note when it appears.
   useEffect(() => {
     if (note) {
-      /* eslint-disable react-hooks/set-state-in-effect -- sync external (Electric) state into form state when the note id changes */
+      /* eslint-disable react-hooks/set-state-in-effect -- sync external (collection) state into form state when the note id changes */
       setTitle(note.title);
       setBody(note.body);
       /* eslint-enable react-hooks/set-state-in-effect */

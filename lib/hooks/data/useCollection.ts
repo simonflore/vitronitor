@@ -1,22 +1,22 @@
 /**
- * Generic Electric subscription hook.
+ * Generic TanStack DB subscription hook.
  *
- * useCollection subscribes to a single Electric collection and
- * exposes typed rows + a single isReady flag that combines:
- *   - Electric's onFirstReady (initial sync complete)
- *   - subscription delivered the rows
+ * Subscribes to a single sync collection and exposes typed rows + an
+ * `isReady` flag that combines:
+ *   - the collection's `onFirstReady` (initial sync complete)
+ *   - whether the subscription has delivered rows
  *
- * Use it directly when wrapping a single collection (see useNotes). For
- * multi-collection joins, compose multiple useCollection calls.
+ * Use it directly when wrapping a single collection (see `useNotes`). For
+ * multi-collection joins, compose multiple `useCollection` calls.
  *
- * StrictMode note: subscription is delayed one render so React doesn't
- * lose the onFirstReady callback during dev double-mount.
+ * Strict-Mode note: subscription is delayed one render so React doesn't lose
+ * the `onFirstReady` callback during dev double-mount.
  */
 
 import { useEffect, useState } from 'react';
-import { useTanStackDb } from '@/lib/electric/TanStackDbProvider';
+import { useTanStackDb } from '@/lib/sync/TanStackDbProvider';
 
-export interface ElectricCollection {
+export interface SyncCollection {
   toArray: unknown;
   subscribeChanges: (
     callback: () => void,
@@ -33,16 +33,16 @@ export interface UseCollectionResult<TRow> {
 }
 
 export function useCollection<TRow>(
-  collection: ElectricCollection | null,
+  collection: SyncCollection | null,
   hookName: string,
   skip = false,
 ): UseCollectionResult<TRow> {
-  const { isEnabled } = useTanStackDb();
+  const { persistenceReady } = useTanStackDb();
 
   const [rows, setRows] = useState<TRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [electricReady, setElectricReady] = useState(false);
+  const [firstReady, setFirstReady] = useState(false);
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -51,7 +51,7 @@ export function useCollection<TRow>(
   }, []);
 
   useEffect(() => {
-    if (!isMounted || !isEnabled || !collection || skip) {
+    if (!isMounted || !persistenceReady || !collection || skip) {
       if (skip) {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- clear rows when subscription is intentionally skipped
         setRows([]);
@@ -61,7 +61,7 @@ export function useCollection<TRow>(
     }
 
     setIsLoading(true);
-    setElectricReady(false);
+    setFirstReady(false);
 
     const update = () => {
       try {
@@ -76,17 +76,17 @@ export function useCollection<TRow>(
     };
 
     collection.onFirstReady(() => {
-      setElectricReady(true);
+      setFirstReady(true);
     });
 
     // Offline boot with cached data: treat as ready so empty-state UIs stay correct.
     if (typeof navigator !== 'undefined' && !navigator.onLine && (collection.toArray as unknown[]).length > 0) {
-      setElectricReady(true);
+      setFirstReady(true);
     }
 
     const sub = collection.subscribeChanges(update, { includeInitialState: true });
     return () => sub.unsubscribe();
-  }, [isMounted, isEnabled, collection, skip, hookName]);
+  }, [isMounted, persistenceReady, collection, skip, hookName]);
 
-  return { rows, isLoading, error, isReady: electricReady && !isLoading };
+  return { rows, isLoading, error, isReady: firstReady && !isLoading };
 }

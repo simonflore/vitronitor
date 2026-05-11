@@ -8,7 +8,7 @@
  *   2. Persist the user's selected org id (localStorage)
  *   3. Add a switcher UI
  *   4. Send X-Org-Id on every API call (see lib/api-client.ts)
- *   5. Recreate Electric collections on org switch (see TanStackDbProvider)
+ *   5. Recreate sync collections on org switch (see TanStackDbProvider)
  */
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -25,8 +25,8 @@ interface OrgContextValue {
 const OrgContext = createContext<OrgContextValue | null>(null);
 
 // Module-level mirror of the resolved orgId, set by the provider every time
-// it changes. Read by code that runs outside React (Electric collection
-// factory, mutation WAL) where calling a hook isn't possible.
+// it changes. Read by code that runs outside React (sync collection factory)
+// where calling a hook isn't possible.
 let _currentOrgId: string | null = null;
 export function getCurrentOrgId(): string | null {
   return _currentOrgId;

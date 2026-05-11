@@ -4,7 +4,8 @@
  *   - attaches the Supabase Bearer token automatically
  *   - unwraps the { ok, data } | { ok: false, error } envelope
  *
- * Offline mutation queuing is layered on top via the web SW + Electric WAL.
+ * Offline mutation queuing is layered on top via the sync layer's
+ * `@tanstack/offline-transactions` executor (see `lib/sync/offline-executor.ts`).
  */
 
 import { createClient } from '@/lib/supabase/client';
