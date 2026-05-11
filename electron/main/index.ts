@@ -11,13 +11,16 @@
  *   5. Tray icon + minimal app menu
  */
 
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, net, protocol, shell } from 'electron';
+import * as fs from 'fs';
 import * as path from 'path';
+import { pathToFileURL } from 'url';
 import { registerStorageIpc } from './ipc/storage';
 import { createTray, destroyTray } from './tray';
 import { initAutoUpdater, checkForUpdatesOnStartup } from './updater';
 import {
   resolveRendererPath,
+  getActiveRendererDir,
   registerRendererOtaIpc,
   scheduleUpdateCheck,
   stopUpdateCheck,
@@ -27,6 +30,26 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 // Custom protocol — replace with your scheme. Used for OAuth callbacks.
 const PROTOCOL = 'vitronitor';
+
+// Register the `app://` scheme as a privileged standard scheme BEFORE
+// app.whenReady so the renderer gets a real (non-opaque) origin. Required for
+// secure-context features like OPFS, Service Workers with persistence, and a
+// well-defined storage quota. Production-only — dev mode loads from
+// http://localhost:5173 which is already a real origin.
+if (!isDev) {
+  protocol.registerSchemesAsPrivileged([
+    {
+      scheme: 'app',
+      privileges: {
+        standard: true,
+        secure: true,
+        supportFetchAPI: true,
+        codeCache: true,
+        stream: true,
+      },
+    },
+  ]);
+}
 
 // Single-instance lock — second invocation focuses the existing window
 // (instead of opening a duplicate). Required for deep links to focus the
@@ -60,9 +83,10 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
-    // resolveRendererPath() picks pending → active → bundled.
-    // Returns a file:// URL with no fragment; React Router (hash routing)
-    // navigates internally from there.
+    // resolveRendererPath() picks pending → active → bundled and records the
+    // chosen dist directory; the `app://` protocol handler (below) serves
+    // files from that directory. Returns an `app://` URL — React Router
+    // (hash routing) navigates internally from there.
     mainWindow.loadURL(resolveRendererPath());
   }
 
@@ -110,6 +134,75 @@ app.on('second-instance', (_event, argv) => {
 });
 
 app.whenReady().then(async () => {
+  // Production: serve the renderer over the registered `app://` scheme. The
+  // handler maps `app://vitronitor/<path>` to `<activeRendererDir>/<path>`,
+  // resolving to the OTA-staged or bundled dist depending on what
+  // resolveRendererPath() picked at boot. Using net.fetch on a file:// URL
+  // gives correct MIME types and range-request handling for free.
+  if (!isDev) {
+    protocol.handle('app', async (request) => {
+      const url = new URL(request.url);
+      // Reject any host other than `vitronitor`. Standard schemes treat the
+      // host as part of the origin — accepting arbitrary hosts would let the
+      // same bundle run under multiple `app://` origins with separate
+      // storage partitions, defeating the point of a real origin.
+      if (url.host !== 'vitronitor') {
+        return new Response('Forbidden', { status: 403 });
+      }
+      const requestedPath = url.pathname === '/' ? '/index.html' : url.pathname;
+      const root = getActiveRendererDir();
+      const lexical = path.resolve(path.join(root, requestedPath));
+
+      // Lexical guard rejects `..` segments, but a symlink inside an OTA
+      // bundle could still point outside `root`. Resolve realpath on both
+      // sides and compare. If the file doesn't exist, realpath throws — we
+      // surface that as 404 so missing assets don't crash the handler.
+      let resolved: string;
+      let rootReal: string;
+      try {
+        resolved = fs.realpathSync(lexical);
+        rootReal = fs.realpathSync(root);
+      } catch {
+        return new Response('Not Found', { status: 404 });
+      }
+      if (resolved !== rootReal && !resolved.startsWith(rootReal + path.sep)) {
+        return new Response('Forbidden', { status: 403 });
+      }
+
+      const fileResponse = await net.fetch(pathToFileURL(resolved).toString());
+      // Inject a CSP so a compromised renderer (stored XSS, tampered OTA
+      // bundle past the checksum check) can't fetch arbitrary remote scripts.
+      // wasm-unsafe-eval is required for wa-sqlite. style-src 'unsafe-inline'
+      // covers React inline-style props. connect-src lists Supabase REST +
+      // Realtime + your API host (edit per deployment).
+      const headers = new Headers(fileResponse.headers);
+      headers.set(
+        'Content-Security-Policy',
+        [
+          "default-src 'self'",
+          "script-src 'self' 'wasm-unsafe-eval'",
+          "style-src 'self' 'unsafe-inline'",
+          "font-src 'self' data:",
+          "img-src 'self' data: blob: https:",
+          "media-src 'self' blob: https:",
+          "worker-src 'self' blob:",
+          // `data:` is required for the wa-sqlite OPFS worker, which ships
+          // its WASM inlined as `data:application/wasm;base64,...`.
+          "connect-src 'self' data: https://*.supabase.co wss://*.supabase.co",
+          "frame-src 'none'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join('; '),
+      );
+      return new Response(fileResponse.body, {
+        status: fileResponse.status,
+        statusText: fileResponse.statusText,
+        headers,
+      });
+    });
+  }
+
   registerStorageIpc();
   registerRendererOtaIpc();
 

@@ -10,7 +10,6 @@
  *   - lib/supabase/native-storage.ts → getStorageItem / setStorageItem / removeStorageItem
  *   - lib/platform.ts → window.electronAPI presence as the "is Electron?" sentinel
  *   - lib/hooks/useElectronUpdater.ts → updater methods + onUpdateStatus
- *   - lib/electric/storage/adapters/electron-sqlite-adapter.ts (future) → sqlite.*
  *   - src/main.tsx → rendererOta.notifyReady
  */
 

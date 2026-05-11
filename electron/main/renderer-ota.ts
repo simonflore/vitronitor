@@ -80,9 +80,30 @@ function getVersionDir(version: string): string {
 function getVersionIndexHtml(version: string): string {
   return path.join(getVersionDir(version), 'dist', 'index.html');
 }
+function getVersionDistDir(version: string): string {
+  return path.join(getVersionDir(version), 'dist');
+}
 function getBundledIndexHtml(): string {
   // From electron/dist/main/, walk up to package root, then into dist/.
   return path.join(__dirname, '..', '..', '..', 'dist', 'index.html');
+}
+function getBundledDistDir(): string {
+  return path.join(__dirname, '..', '..', '..', 'dist');
+}
+
+/** Absolute path to the dist directory of the renderer chosen by the last
+ *  `resolveRendererPath()` call. The custom `app://` protocol handler in
+ *  `electron/main/index.ts` reads files from here. Set during boot and kept
+ *  stable for the BrowserWindow lifetime — OTA promotions take effect on the
+ *  next launch via state.json. */
+let activeRendererDir: string | null = null;
+
+/** Returns the dist dir the renderer is currently being served from. The
+ *  `app://` protocol handler reads from this. Falls back to the bundled
+ *  dist if `resolveRendererPath()` hasn't run yet (defensive — should
+ *  never happen since createWindow always calls it first). */
+export function getActiveRendererDir(): string {
+  return activeRendererDir ?? getBundledDistDir();
 }
 
 function loadState(): RendererState {
@@ -192,11 +213,17 @@ export function resolveRendererPath(): string {
 
   if (willLoad) {
     console.log(`[renderer-ota] loading OTA renderer ${willLoad}`);
-    return `file://${getVersionIndexHtml(willLoad)}`;
+    activeRendererDir = getVersionDistDir(willLoad);
+  } else {
+    console.log('[renderer-ota] loading bundled renderer');
+    activeRendererDir = getBundledDistDir();
   }
 
-  console.log('[renderer-ota] loading bundled renderer');
-  return `file://${getBundledIndexHtml()}`;
+  // Serve the renderer over the registered `app://` scheme so OPFS, Service
+  // Workers, and other secure-context APIs get a real origin. The protocol
+  // handler in `electron/main/index.ts` maps `app://vitronitor/<path>` to
+  // `<activeRendererDir>/<path>`.
+  return 'app://vitronitor/index.html';
 }
 
 /**
