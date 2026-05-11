@@ -15,13 +15,13 @@ than prose alone.
 
 ## What it implements
 
-Eight HTTP endpoints behind a Bearer-JWT + org-resolution middleware:
+HTTP endpoints behind a Bearer-JWT + org-resolution middleware:
 
 | Method + path | Purpose |
 |---|---|
 | `GET /api/health` | Liveness + version (no auth) |
-| `GET/POST/PATCH/DELETE /api/notes[/:id]` | Notes CRUD demo (org-scoped, soft-delete) |
-| `GET /api/electric/shape` | Electric proxy with org-scoped WHERE injection |
+| `GET/POST/PATCH/DELETE /api/notes[/:id]` | Notes CRUD (org-scoped, soft-delete) |
+| `GET /api/sync/:table` | Bulk-read endpoint for TanStack DB collections |
 | `POST /api/capacitor/bundle` | Capacitor (iOS Capgo) OTA manifest endpoint |
 | `POST /api/electron/bundle` | Electron renderer OTA manifest endpoint |
 | `GET /api/electron/shell/*` | electron-updater feed (yml + presigned binaries) |
@@ -30,9 +30,10 @@ Plus a `withAuth` middleware that resolves `c.var.user` and `c.var.orgId`
 from a Supabase JWT. Replace this single file to swap auth providers —
 see [`docs/AUTH.md`](../../docs/AUTH.md).
 
-The Electric proxy in `server/routes/electric.ts` carries non-trivial
-error handling (304/409 forwarding, header passthrough, cache stripping)
-worth lifting to your port verbatim.
+Mutation routes call `broadcastChange` (in `server/lib/broadcast.ts`) so
+clients subscribed to the org's Supabase Realtime channel can invalidate
+their TanStack Query cache and refetch. Broadcasts are best-effort —
+client-side `staleTime` + refetch-on-focus catches anything dropped.
 
 ## Running it
 
@@ -41,7 +42,7 @@ The example is self-contained — its own `package.json`, deps, and scripts.
 ```bash
 cd examples/server-hono
 npm install --legacy-peer-deps
-cp .env.example .env.local        # fill in Supabase + Electric + S3 creds
+cp .env.example .env.local        # fill in Supabase + S3 creds
 npm run dev                        # Hono on :3001 + Caddy on :3000
 ```
 
@@ -91,7 +92,7 @@ examples/server-hono/
 Two files are imported back from the repo root via relative paths
 (`../../../../lib/...`):
 
-- `lib/electric/tables.ts` — table list + scope helpers shared with the
+- `lib/sync/config.ts` — allowlist + scope helpers shared with the
   client. Keep both sides in sync when you add a table.
 - `lib/version.ts` — `APP_VERSION` from `package.json`, surfaced by `/api/health`.
 

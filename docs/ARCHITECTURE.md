@@ -6,42 +6,45 @@
 flowchart TB
     subgraph Client["Client (web / iOS / Android / Electron)"]
         UI[React UI]
-        TSDB[TanStack DB collections]
-        ELC[Electric client]
-        WAL[Mutation WAL]
-        IDB[(IndexedDB)]
+        TSDB["TanStack DB collections<br/>(@tanstack/query-db-collection)"]
+        OE["@tanstack/offline-transactions<br/>OfflineExecutor"]
+        SQ[("OPFS wa-sqlite (web/Electron)<br/>@capacitor-community/sqlite (iOS/Android)")]
         SS[(Supabase auth<br/>storage)]
+        BL["Realtime broadcast listener"]
         SW[Service Worker<br/>web only]
     end
 
     subgraph Server["Hono API server (Node)"]
         AUTH[withAuth middleware]
-        EProxy["/api/electric/shape<br/>proxy"]
+        Sync["/api/sync/:table<br/>bulk read"]
         Notes["/api/notes CRUD"]
+        BC[broadcastChange<br/>helper]
         OTA1["/api/capacitor/bundle<br/>iOS Capgo"]
         OTA2["/api/electron/bundle"]
         Releases["/api/electron/shell/*<br/>electron-updater"]
     end
 
     subgraph Backends["External"]
-        SBA[Supabase Auth + Postgres]
-        ECloud[Electric Cloud<br/>or self-hosted]
+        SBA[Supabase Auth + Postgres + Realtime]
         S3[(S3-compatible<br/>OTA bucket)]
     end
 
     UI <--> TSDB
-    TSDB <--> ELC
-    TSDB <--> WAL
-    WAL <--> IDB
+    TSDB <--> OE
+    TSDB <--> SQ
     UI <--> SS
     UI -.web only.-> SW
 
-    ELC -- HTTPS shape stream --> EProxy
-    UI -- apiFetch --> AUTH
+    TSDB -- GET /api/sync/:table --> AUTH
+    OE -- POST/PATCH/DELETE --> AUTH
+    AUTH --> Sync
     AUTH --> Notes
-    EProxy --> ECloud
     Notes --> SBA
-    AUTH --> SBA
+    Notes -- after each mutation --> BC
+    BC -- /realtime/v1/api/broadcast --> SBA
+    Sync --> SBA
+    SBA -- broadcast on org:${orgId} --> BL
+    BL -- invalidateQueries([table]) --> TSDB
     OTA1 --> S3
     OTA2 --> S3
     Releases --> S3
@@ -55,40 +58,39 @@ sequenceDiagram
     actor U as User
     participant UI as React UI
     participant C as TanStack DB collection
-    participant W as Mutation WAL
-    participant Q as Queue processor
+    participant E as OfflineExecutor
     participant API as Hono API
     participant DB as Postgres
-    participant E as Electric
+    participant RT as Supabase Realtime
+    participant B as BroadcastListener<br/>(other devices)
 
     U->>UI: edit note
-    UI->>C: collection.update(id, changes)
-    Note right of C: optimistic UI<br/>updates immediately
-
-    C->>W: persist mutation
-    W->>+API: PATCH /api/notes/:id
+    UI->>E: action({ id, changes })
+    E->>C: optimistic update
+    Note right of C: UI re-renders immediately
 
     alt online
+        E->>+API: PATCH /api/notes/:id<br/>X-Idempotency-Key
         API->>+DB: UPDATE notes SET ... WHERE id = ? AND org_id = ?
         DB-->>-API: row updated
-        API-->>-W: 200 OK
-        W->>W: drop from WAL
-        DB->>E: WAL → publication
-        E-->>C: shape event
-        C->>UI: re-render with confirmed state
+        API->>RT: POST /realtime/v1/api/broadcast<br/>{ table:'notes', op:'update', id }
+        API-->>-E: 200 OK
+        E->>E: drop from outbox
+        RT-->>B: change event on org:${orgId}
+        B->>B: invalidateQueries(['notes'])
+        B->>API: GET /api/sync/notes
+        API-->>B: rows
+        B->>C: refresh
     else offline
-        W-->>-W: keep mutation, schedule retry
-        Note right of W: optimistic state stays
-        Note right of Q: hours later, online event
-        Q->>W: drainPendingMutations(orgId)
-        W->>+API: PATCH /api/notes/:id (retry)
+        E-->>E: persist to outbox, schedule retry
+        Note right of E: optimistic state stays
+        Note right of E: minutes/hours later, network back
+        E->>+API: PATCH /api/notes/:id (retry)
         API->>+DB: UPDATE
         DB-->>-API: ok
-        API-->>-W: 200
-        W->>W: drop from WAL
-        DB->>E: publish
-        E-->>C: shape event
-        C->>UI: re-render
+        API->>RT: broadcast
+        API-->>-E: 200
+        E->>E: drop from outbox
     end
 ```
 
@@ -161,12 +163,18 @@ sequenceDiagram
 | Hono API | `examples/server-hono/server/{index,app}.ts`, `examples/server-hono/server/routes/*` |
 | Auth seam | `examples/server-hono/server/middleware/auth.ts` |
 | Response envelope | `examples/server-hono/server/lib/response.ts` |
-| Sync provider | `lib/electric/TanStackDbProvider.tsx` |
-| Sync collection pattern | `lib/electric/collections/{factory,notes}.ts` |
-| Offline persistence | `lib/electric/storage/{persistence-adapter,types}.ts` + adapters |
-| Offline mutations | `lib/electric/{mutation-wal,mutation-queue-processor}.ts` |
+| Sync read endpoint | `examples/server-hono/server/routes/sync.ts` (allowlist + org-filter) |
+| Sync write endpoints | `examples/server-hono/server/routes/notes.ts` (or `<name>.ts` per collection) |
+| Broadcast emit | `examples/server-hono/server/lib/broadcast.ts` |
+| Sync provider | `lib/sync/TanStackDbProvider.tsx` |
+| Sync collection pattern | `lib/sync/collections/{factory,notes}.ts` |
+| Sync allowlist + scope helpers | `lib/sync/config.ts` |
+| Offline outbox | `lib/sync/offline-executor.ts` (`@tanstack/offline-transactions`) |
+| Broadcast listener | `lib/realtime/broadcast-listener.tsx` |
+| Query client | `lib/query-client.ts` |
 | Service Worker | `public/sw.js` |
 | Electron main | `electron/main/{index,preload,tray,updater,renderer-ota}.ts` |
+| Electron `app://` handler | `electron/main/index.ts` (`protocol.registerSchemesAsPrivileged` + `protocol.handle('app', …)`) |
 | Electron auth backing | `electron/main/ipc/storage.ts` (safeStorage) |
 | OTA signing | `.capgo_key_v2` (gitignored) + `setup-signing-key.sh` |
 | OTA publish | `scripts/publish-{capacitor,electron}-bundle.sh` + `publish-electron-shell.sh` |
@@ -175,32 +183,48 @@ sequenceDiagram
 
 ## Decisions worth knowing
 
-- **Hash routing** — `createHashRouter` everywhere. Same React app works
-  in dev, prod (Hono-served), Capacitor (`capacitor://localhost`), and
-  Electron (`file://`) without server-side routing config or build-time
-  base URL games.
-- **Raw Electron, not Capacitor-Community-Electron** — Capacitor technically
-  targets desktop via the Community Electron platform, but it's a thin
-  wrapper around Electron that gives you a Capacitor-flavoured app, not a
-  real Electron one: tray + multi-window + deep IPC + safeStorage + native
-  Node modules in the main process all become second-class. Vitronitor
-  builds its own Electron shell (`electron/main/`) and shares only the
-  Vite/React renderer with Capacitor. Two purpose-built native shells, one
-  renderer — more code, but Electron stays Electron.
-- **Mutation WAL on every platform** — even on web, mutations route through
-  Vitronitor's own IndexedDB-backed Write-Ahead Log instead of relying on
-  the Service Worker's Background Sync API. The WAL is *not* an Electric
-  feature — Electric is read-path sync only; the write path is ours. Same
-  code path everywhere; survives full app crashes, not just tab closes.
-  See [ELECTRIC.md](./ELECTRIC.md#scope-what-electric-does-and-what-it-doesnt).
+- **Hash routing** — `createHashRouter` everywhere. The same React app
+  works in dev, prod (Hono-served), Capacitor (`capacitor://localhost`),
+  and Electron (`app://vitronitor/`) without server-side routing config
+  or build-time base URL games.
+- **`app://` for the Electron renderer** — `file://` origins are
+  *opaque*: OPFS quota is undefined, Service Workers won't register,
+  and shared-array-buffer features won't activate. We register `app://`
+  as a privileged standard scheme and serve `dist/` through a
+  `protocol.handle('app', …)` callback so the renderer runs under a
+  real origin. The handler also injects a CSP per response — tampering
+  with a downloaded OTA bundle past the checksum check can't escalate
+  to remote-script execution.
+- **Raw Electron, not Capacitor-Community-Electron** — Capacitor
+  technically targets desktop via the Community Electron platform, but
+  it's a thin wrapper that gives you a Capacitor-flavoured app, not a
+  real Electron one: tray + multi-window + deep IPC + safeStorage +
+  native Node modules in the main process all become second-class.
+  Vitronitor builds its own Electron shell (`electron/main/`) and
+  shares only the Vite/React renderer with Capacitor. Two purpose-built
+  native shells, one renderer.
+- **Read path is plain HTTP, not streaming** — `@tanstack/query-db-collection`
+  fetches `GET /api/sync/:table` and TanStack Query owns the cache.
+  Cross-device freshness comes from Supabase Realtime broadcasts on
+  `org:${orgId}` triggering `invalidateQueries`. There's no bespoke
+  long-poll or SSE protocol to host or operate — any backend that can
+  return `{ ok: true, data: [...rows] }` and post a `change` payload
+  to a pub/sub channel is enough.
+- **Offline outbox via `@tanstack/offline-transactions`** — every write
+  is wrapped in `executor.createOfflineAction({ mutationFnName, onMutate })`
+  so it persists to the durable outbox before reaching the network.
+  Retries thread an idempotency key; permanent failures (404/410/422)
+  throw `NonRetriableError` so the entry dead-letters instead of
+  looping forever. Survives full app crashes — not just tab closes.
 - **SPA shell for prod** — Hono serves `dist/` with a `*` fallback to
   `index.html`. Electron uses the same `index.html` via the renderer-OTA
-  resolver in production.
+  resolver in production, served through `app://vitronitor/`.
 - **Single-org default** — the `on_auth_user_created` Postgres trigger
   creates one workspace per new user. The `withAuth` middleware
-  resolves `orgId` to the user's first `org_members` row. Multi-org is a
-  documented extension: drop the trigger, send `X-Org-Id` from the client.
-- **One key signs both OTAs** — `.capgo_key_v2` signs both iOS Capgo and
-  Electron renderer bundles. Same RSA-PKCS1 + AES-128-CBC wire format,
-  same public PEM in two files (`capacitor.config.ts` +
+  resolves `orgId` to the user's first `org_members` row. Multi-org is
+  a documented extension: drop the trigger, send `X-Org-Id` from the
+  client, and tear down + recreate the sync collections on switch.
+- **One key signs both OTAs** — `.capgo_key_v2` signs both iOS Capgo
+  and Electron renderer bundles. Same RSA-PKCS1 + AES-128-CBC wire
+  format, same public PEM in two files (`capacitor.config.ts` +
   `electron/main/renderer-ota.ts`).

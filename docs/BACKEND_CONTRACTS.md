@@ -3,18 +3,17 @@
 The Vitronitor client cares about HTTP + JSON only. Implement these endpoints
 in any framework / language and the rest of the stack works.
 
-The reference implementation is **Hono on Node** (in `server/`). To swap
-to Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js API
-routes — or PHP/Python/Ruby/Go/Rust/.NET — keep these contracts and the
+The reference implementation is **Hono on Node** (in `examples/server-hono/`).
+To swap to Bun, Cloudflare Workers, Deno, Express, Fastify, Elysia, Next.js
+API routes — or PHP/Python/Ruby/Go/Rust/.NET — keep these contracts and the
 client doesn't notice.
 
 ## 1. Auth resolution (middleware contract)
 
 Every protected endpoint runs through a middleware that:
 
-- Extracts either `Authorization: Bearer <jwt>` or
-  `Authorization: Bearer gig_<api-key>` (optional) or `sb-*-auth-token`
-  cookie (optional).
+- Extracts `Authorization: Bearer <jwt>` (the only client today; cookie /
+  API-key are documented extension points).
 - Validates the JWT against your auth provider (Supabase by default).
 - Resolves `orgId` from the validated user — either by reading
   `X-Org-Id` header (for multi-org apps) or by picking the user's first
@@ -49,50 +48,77 @@ Status codes:
 | 401 | unauthenticated |
 | 403 | forbidden |
 | 404 | resource not found |
-| 409 | conflict (also: Electric "must-refetch") |
+| 410 | gone (dead-lettered by the offline executor) |
+| 422 | unprocessable entity (dead-lettered by the offline executor) |
 | 429 | rate limit |
 | 500 | server error |
 | 503 | upstream / DB unavailable |
 
 The client (`lib/api-client.ts → apiFetch`) unwraps `data` automatically
-and throws an `ApiFetchError` on `ok: false`.
+and throws an `ApiFetchError` on `ok: false`. Permanent errors (404 /
+410 / 422 — also 400 with `/no longer exists|not found/i`) cause the
+sync layer's `OfflineExecutor` to throw `NonRetriableError` so the
+captured mutation is dead-lettered instead of retried forever.
 
-Reference: `examples/server-hono/server/lib/response.ts`.
+Reference: `examples/server-hono/server/lib/response.ts`,
+`lib/sync/offline-executor.ts → isPermanentApiError`.
 
-## 3. `GET /api/electric/shape`
+## 3. `GET /api/sync/:table`
 
-The Electric SDK long-polls this endpoint. The proxy must:
+The bulk-read endpoint that `@tanstack/query-db-collection` calls on
+collection mount and on broadcast-triggered `invalidateQueries`.
 
 | Step | Detail |
 |---|---|
 | Auth | Run the auth middleware. Reject 401 if no valid JWT. |
-| Validate `table` query param | Required. Reject 400 if missing. |
-| Build upstream URL | Append `source_id` + `source_secret` for Electric Cloud, or whatever your self-hosted Electric needs. |
-| Inject scope filter | Org-scoped tables → append `where: org_id = '<resolved>'`. User-scoped tables → append `where: user_id = '<resolved>'`. **Drop any client-supplied `where`.** |
-| Forward other client params | Anything not in `{table, where, _org}` — passes through `cache-buster`, `log`, `replica`, etc. |
-| Fetch upstream | `GET <electric>/v1/shape?...` with `cache: 'no-store'`. Do NOT forward `If-None-Match` (you don't want Electric returning 304 with a stale shape handle). |
-| Forward Electric headers | `electric-offset`, `electric-handle`, `electric-schema`, `electric-cursor`, `electric-up-to-date`. |
-| Strip caching headers | Set `Cache-Control: no-store`, `CDN-Cache-Control: no-store`. **Do NOT** forward `cache-control` or `etag` from upstream — both cause cross-org leakage / stale handles. |
-| Status pass-through | 304 → forward as-is. 409 → forward (client recreates the collection). Other 4xx/5xx → 500 to client. |
+| Validate `table` param | Must be on the allowlist (see `lib/sync/config.ts → isOrgScopedTable`). Reject 400 if unknown — defence in depth on top of RLS. |
+| Filter | `SELECT * FROM <table> WHERE org_id = c.var.orgId`. Add scope variants (per-user, per-team) by extending `lib/sync/config.ts` and branching here. |
+| Response | `{ ok: true, data: [...rows] }` with snake_case columns matching the Zod schemas in `lib/sync/collections/generated/`. |
 
-Reference: `examples/server-hono/server/routes/electric.ts`.
+Reference: `examples/server-hono/server/routes/sync.ts`.
 
-## 4. Notes CRUD
+## 4. CRUD endpoints (per collection)
 
-A simple example domain. For your real schema, replicate the pattern:
-behind `withAuth`, scoped by `c.var.orgId`, soft-delete on DELETE so
-Electric publication can stream the change.
+Per-collection HTTP routes paired with the offline executor's
+`mutationFn`. For the `notes` collection:
 
 | Method | Path | Body | Response |
 |---|---|---|---|
 | POST | `/api/notes` | `{ id?, title?, body? }` | `{ ok: true, data: <full row> }` (201) |
 | PATCH | `/api/notes/:id` | `{ title?, body? }` | `{ ok: true, data: <full row> }` |
 | DELETE | `/api/notes/:id` | – | `{ ok: true, data: { id } }` |
-| GET | `/api/notes` | – | `{ ok: true, data: [...] }` |
+| GET | `/api/notes` | – | `{ ok: true, data: [...] }` (optional — `/api/sync/notes` is the canonical bulk-read endpoint) |
 
-Reference: `examples/server-hono/server/routes/notes.ts`.
+All routes:
+- Run behind `withAuth`, scoped by `c.var.orgId`.
+- Soft-delete on DELETE (set `deleted_at`) so subscribers see a row-update
+  event rather than a phantom disappearance.
+- **Call `broadcastChange({ orgId, table: 'notes', op, id })` after every
+  successful mutation** so the client-side broadcast listener fires
+  `invalidateQueries` on subscribed devices.
 
-## 5. `POST /api/capacitor/bundle` (iOS Capgo)
+Reference: `examples/server-hono/server/routes/notes.ts`,
+`examples/server-hono/server/lib/broadcast.ts`.
+
+## 5. Realtime broadcast contract
+
+After every server-side mutation, emit:
+
+```
+channel: org:${orgId}
+event:   change
+payload: { table: string, op: 'insert' | 'update' | 'delete', id: string }
+```
+
+The reference implementation uses Supabase Realtime's HTTP broadcast
+endpoint (`POST <supabase>/realtime/v1/api/broadcast` with the
+service-role key). Any pub/sub that can route the same payload to
+subscribed clients works — replace `server/lib/broadcast.ts` and the
+matching `lib/realtime/broadcast-listener.tsx`. Best-effort: clients
+already refetch on focus + at `staleTime` boundaries, so a dropped
+broadcast just means slightly delayed propagation.
+
+## 6. `POST /api/capacitor/bundle` (iOS Capgo)
 
 Public, no auth. Body:
 
@@ -123,7 +149,7 @@ in the Capgo plugin.
 
 Reference: `examples/server-hono/server/routes/capacitor-bundle.ts`.
 
-## 6. `POST /api/electron/bundle`
+## 7. `POST /api/electron/bundle`
 
 Same shape as `/api/capacitor/bundle`, plus:
 
@@ -136,7 +162,7 @@ without breaking installed users on the old shell.
 
 Reference: `examples/server-hono/server/routes/electron-bundle.ts`.
 
-## 7. `GET /api/electron/shell/*`
+## 8. `GET /api/electron/shell/*`
 
 Generic-HTTP feed for `electron-updater`. Hits both:
 
@@ -153,9 +179,9 @@ Implementation:
 | Anything else | 404. |
 | Path traversal (`..`, `//`) | 400. |
 
-Reference: `examples/server-hono/examples/server-hono/server/routes/electron-shell.ts`.
+Reference: `examples/server-hono/server/routes/electron-shell.ts`.
 
-## 8. Object store client
+## 9. Object store client
 
 Used by all three OTA endpoints. The reference implementation supports
 AWS S3 / Cloudflare R2 / MinIO / Garage.
@@ -171,7 +197,7 @@ Garage rejects them. Set `requestChecksumCalculation: 'WHEN_REQUIRED'` +
 `responseChecksumValidation: 'WHEN_REQUIRED'` on the SDK client. Safe
 on AWS / R2 / MinIO too.
 
-Reference: `lib/object-storage.ts`.
+Reference: `examples/server-hono/lib/object-storage.ts`.
 
 ## What's NOT contractual
 
@@ -192,13 +218,16 @@ When swapping the backend:
 
 - [ ] `withAuth` middleware that sets `user` + `orgId` on the request context
 - [ ] Response envelope helpers (`success`, `error`, `notFound`, etc.)
-- [ ] `GET /api/electric/shape` proxy with all the header / where rules
-- [ ] `GET/POST/PATCH/DELETE /api/notes(/:id)` for the example domain
+- [ ] `GET /api/sync/:table` bulk-read endpoint scoped by `org_id`
+- [ ] `GET/POST/PATCH/DELETE /api/notes(/:id)` for the example domain,
+      with `broadcastChange` calls after every mutation
+- [ ] A `broadcastChange` helper that emits `{ table, op, id }` on
+      `org:${orgId}` (Supabase Realtime in the reference; any pub/sub works)
 - [ ] `POST /api/capacitor/bundle` (iOS Capgo)
 - [ ] `POST /api/electron/bundle`
 - [ ] `GET /api/electron/shell/*` (electron-updater)
 - [ ] Object store client (presigned GET + PUT, plus a way to read the manifest)
-- [ ] Env validation that fails fast at boot if Supabase / Electric / S3 vars are missing
+- [ ] Env validation that fails fast at boot if Supabase / S3 vars are missing
 - [ ] Static SPA serving in production (or front with nginx / Caddy in front of an API-only backend)
 
 That's it. The client doesn't care which language the server is written in.

@@ -14,17 +14,17 @@ the root alone is enough.
 ## Prerequisites
 
 - **Node 22+** — `.nvmrc` files in the root and example pin the version. `nvm use` / `fnm use`.
-- A **Supabase project** — see [SUPABASE.md](./SUPABASE.md). Free tier is fine.
-- An **Electric source** — Cloud (free) or self-hosted. See [ELECTRIC.md](./ELECTRIC.md).
+- A **Supabase project** — see [SUPABASE.md](./SUPABASE.md). Free tier is fine. Used for auth, Postgres, and Realtime broadcast.
 - An **S3-compatible bucket** for OTA bundles — see [OBJECT_STORE_SETUP.md](./OBJECT_STORE_SETUP.md). AWS S3, Cloudflare R2, MinIO, and Garage all work.
-- **Caddy** if you'll run the reference backend:
+- **Caddy** (optional) if you want HTTPS in dev for the reference backend:
   - macOS: `brew install caddy && caddy trust`
   - Debian/Ubuntu: <https://caddyserver.com/docs/install>
   - `caddy trust` writes a self-signed root CA so `https://localhost:3000` doesn't warn.
 
-Caddy is required for the example backend because Electric opens many
-concurrent shape streams (HTTP/1.1 caps browsers at 6 per origin; HTTP/2
-multiplexes them over one TCP connection).
+Caddy isn't required — Vite's `/api` proxy + the Hono dev server work fine
+over plain HTTP. Caddy is here so dev exercises the same HTTP/2 multiplex
+semantics you'll get in production (long-lived Supabase Realtime WebSocket
++ concurrent `/api/sync` requests behind one origin).
 
 ## Install + run (client)
 

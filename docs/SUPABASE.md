@@ -108,4 +108,4 @@ The single-org-per-user trigger is documented at the top of
 2. Build an org-creation flow (invite codes, "create another workspace" button).
 3. Persist the user's selected org id (localStorage).
 4. Send `X-Org-Id` on every API call (the auth middleware already validates).
-5. Recreate Electric collections on org switch (see TanStackDbProvider).
+5. Recreate sync collections on org switch (see TanStackDbProvider).

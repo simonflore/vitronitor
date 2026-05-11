@@ -107,9 +107,10 @@ If you swap providers:
   `onAuthStateChange()`.
 - **`lib/api-client.ts apiFetch`** — already attaches a Bearer token from
   the Supabase session. Adapt to read the token from your provider.
-- **`lib/electric/collections/factory.ts getAuthHeader()`** — same. The
-  Electric shape stream needs a fresh Bearer token on every request from
-  native (cross-origin), so the function is called per-request.
+- **`lib/api-client.ts apiFetch`** (cont'd) — on native (`capacitor://`,
+  `app://`) the renderer loads from a different origin than the API, so
+  cookies aren't sent automatically. The Bearer token is attached
+  per-request from the cached Supabase session.
 - **`lib/contexts/OrgContext.tsx`** — currently queries
   `org_members(org_id, orgs(name))` from Supabase. If your DB layout
   differs, point it at the right query.
@@ -125,12 +126,13 @@ The boilerplate ships single-org-per-user. To extend:
 4. Send `X-Org-Id` on every API call. The default `withAuth` already
    validates membership against this header and falls back to the first
    org if the header is missing.
-5. On org switch, **recreate the Electric collections** so they stream
-   from the new org's shape. The current TanStackDbProvider doesn't have
-   a switcher — implement a cleanup-then-recreate pattern: dispose the
-   current collections, update the orgId state, and let the `useMemo`
-   that builds collections produce a fresh set keyed off the new orgId.
+5. On org switch, **recreate the sync collections** so the new org's
+   data is fetched. The current TanStackDbProvider doesn't have a
+   switcher — implement a cleanup-then-recreate pattern: call
+   `cleanupCollections()` (which also disposes the offline executor),
+   update the orgId state, and let `getOrCreateCollections` produce a
+   fresh set with a new `${table}-${orgId}` collection ID.
 
-The Electric proxy (`examples/server-hono/server/routes/electric.ts`) is already org-aware:
-it reads `c.var.orgId` and injects `where: org_id = '<resolved>'` for
+The sync read endpoint (`examples/server-hono/server/routes/sync.ts`) is already org-aware:
+it reads `c.var.orgId` and filters `WHERE org_id = ?` for
 every org-scoped table.
