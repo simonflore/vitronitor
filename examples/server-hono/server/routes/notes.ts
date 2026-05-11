@@ -2,12 +2,15 @@
  * Notes CRUD API.
  *
  * Plain HTTP CRUD scoped by the resolved orgId. The client wires this same
- * endpoint to the Electric collection's WAL (persists the mutation locally
- * first, then drains via this route when online).
+ * endpoint to the sync collection's offline executor — it persists the
+ * mutation locally first, then drains via this route when online.
  *
- * Soft-delete on DELETE (sets deleted_at) so Electric can stream the change
- * to all subscribers — hard deletes don't cleanly emit row events without
- * extra triggers.
+ * Soft-delete on DELETE (sets `deleted_at`) so subscribers that listen for
+ * row changes see a row-update event instead of a phantom disappearance.
+ *
+ * Every mutation emits a Supabase Realtime broadcast on `org:${orgId}` so
+ * the client's `BroadcastListener` invalidates the matching TanStack Query
+ * key and other devices refetch immediately.
  */
 
 import { Hono } from 'hono';
@@ -21,6 +24,7 @@ import {
   notFoundResponse,
   parseJsonBody,
 } from '../lib/response';
+import { broadcastChange } from '../lib/broadcast';
 
 const notes = new Hono<{ Variables: AuthVariables }>();
 notes.use('*', withAuth);
@@ -75,6 +79,7 @@ notes.post('/', async (c) => {
     .single();
 
   if (error) return c.json({ ok: false, error: error.message }, 500);
+  void broadcastChange({ orgId, table: 'notes', op: 'insert', id: data.id });
   return createdResponse(c, data);
 });
 
@@ -100,6 +105,7 @@ notes.patch('/:id', async (c) => {
 
   if (error) return c.json({ ok: false, error: error.message }, 500);
   if (!data) return notFoundResponse(c, 'Note');
+  void broadcastChange({ orgId, table: 'notes', op: 'update', id });
   return successResponse(c, data);
 });
 
@@ -107,8 +113,8 @@ notes.delete('/:id', async (c) => {
   const orgId = c.get('orgId');
   const id = c.req.param('id');
 
-  // Soft delete — Electric publication needs the row to remain so subscribers
-  // see the deleted_at change event. A purge job can hard-delete later.
+  // Soft delete — keeps the row visible to subscribers as a `deleted_at`
+  // update event. A purge job can hard-delete later.
   const admin = createAdminClient();
   const { data, error } = await admin
     .from('notes')
@@ -121,6 +127,7 @@ notes.delete('/:id', async (c) => {
 
   if (error) return c.json({ ok: false, error: error.message }, 500);
   if (!data) return notFoundResponse(c, 'Note');
+  void broadcastChange({ orgId, table: 'notes', op: 'delete', id });
   return successResponse(c, { id });
 });
 

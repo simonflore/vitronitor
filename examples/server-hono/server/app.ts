@@ -4,7 +4,7 @@ import { securityHeaders } from './middleware/security-headers';
 import { notFoundResponse } from './lib/response';
 import healthRoutes from './routes/health';
 import notesRoutes from './routes/notes';
-import electricRoutes from './routes/electric';
+import syncRoutes from './routes/sync';
 import capacitorBundleRoutes from './routes/capacitor-bundle';
 import electronShellRoutes from './routes/electron-shell';
 import electronBundleRoutes from './routes/electron-bundle';
@@ -16,7 +16,7 @@ app.use('*', securityHeaders);
 // API routes — mount under /api so Caddy/Vite proxy them cleanly in dev.
 app.route('/api/health', healthRoutes);
 app.route('/api/notes', notesRoutes);
-app.route('/api/electric', electricRoutes);
+app.route('/api/sync', syncRoutes);                                    // bulk-read endpoint for TanStack DB collections
 app.route('/api/capacitor/bundle', capacitorBundleRoutes);            // iOS Capgo OTA
 app.route('/api/electron/shell', electronShellRoutes);                 // Electron shell auto-updater
 app.route('/api/electron/bundle', electronBundleRoutes); // Electron renderer OTA
