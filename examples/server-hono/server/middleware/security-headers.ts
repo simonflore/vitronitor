@@ -9,7 +9,7 @@ import { createMiddleware } from 'hono/factory';
  * - Permissions-Policy                    — opt out of unused powerful APIs
  *
  * No CSP here yet — it depends on which third parties you load (Supabase,
- * Sentry, Electric, your own S3 host). Add one per deployment.
+ * Sentry, your own S3 host). Add one per deployment.
  */
 export const securityHeaders = createMiddleware(async (c, next) => {
   await next();

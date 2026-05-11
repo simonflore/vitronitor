@@ -13,13 +13,10 @@ interface RequiredVar {
 }
 
 const VARS: RequiredVar[] = [
-  // Supabase — required: auth/CRUD won't work without these
+  // Supabase — required: auth/CRUD and Realtime broadcast won't work without these
   { name: 'VITE_SUPABASE_URL', required: true, hint: 'Supabase project URL' },
   { name: 'VITE_SUPABASE_ANON_KEY', required: true, hint: 'Supabase anon (public) key' },
-  { name: 'SUPABASE_SERVICE_ROLE_KEY', required: true, hint: 'Supabase service-role key (server-only)' },
-  // Electric — required: Electric proxy refuses to serve without these
-  { name: 'ELECTRIC_SOURCE_ID', required: true, hint: 'Electric Cloud source id' },
-  { name: 'ELECTRIC_SOURCE_SECRET', required: true, hint: 'Electric Cloud source secret' },
+  { name: 'SUPABASE_SERVICE_ROLE_KEY', required: true, hint: 'Supabase service-role key (server-only, used for /api/sync and Realtime broadcast)' },
   // Object store — required for OTA pipelines so /api/capacitor/bundle doesn't 500
   { name: 'S3_ENDPOINT', required: true, hint: 'S3-compatible object store endpoint' },
   { name: 'S3_ACCESS_KEY_ID', required: true, hint: 'S3-compatible access key' },

@@ -1,9 +1,9 @@
 # HTTP/2 reverse proxy for local development.
 #
-# Electric SQL uses many concurrent shape streams. HTTP/1.1 limits browsers to
-# 6 connections per origin, so shapes queue and block HMR/API calls. Caddy
-# serves HTTP/2 to the browser (multiplexing all streams over one TCP
-# connection) while proxying to Vite and Hono over HTTP/1.1.
+# Optional — vitronitor's runtime works fine over HTTP/1.1 against the Vite
+# dev server's `/api` proxy. Caddy is here so dev exercises the same HTTP/2
+# multiplex semantics you'll get in production (long-lived Supabase Realtime
+# WebSocket + concurrent /api/sync requests behind one origin).
 #
 # Setup (one-time):
 #   brew install caddy        # or apt/equivalent
@@ -20,7 +20,7 @@
 localhost:3000 {
 	tls internal
 
-	# API + Electric shape streams → Hono server
+	# API + sync endpoints → Hono server
 	handle /api/* {
 		reverse_proxy localhost:3001 {
 			header_up Host {upstream_hostport}
