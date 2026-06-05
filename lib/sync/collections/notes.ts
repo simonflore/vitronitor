@@ -66,7 +66,12 @@ const notesConfig: CollectionConfig<DbNoteRow> = {
   onUpdate: async (original, changes) => {
     await apiFetch(`/api/notes/${original.id}`, {
       method: 'PATCH',
-      body: JSON.stringify(changesToNotePartial(changes)),
+      body: JSON.stringify({
+        ...changesToNotePartial(changes),
+        // Optimistic-concurrency baseline — see offline-executor's notes
+        // mutationFn. The server returns 409 on a stale write.
+        baselineUpdatedAt: original.updated_at,
+      }),
     });
   },
 

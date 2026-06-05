@@ -11,13 +11,14 @@
  *   5. Tray icon + minimal app menu
  */
 
-import { app, BrowserWindow, net, protocol, shell } from 'electron';
+import { app, BrowserWindow, net, powerMonitor, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 import { registerStorageIpc } from './ipc/storage';
 import { createTray, destroyTray } from './tray';
-import { initAutoUpdater, checkForUpdatesOnStartup } from './updater';
+import { initAutoUpdater, checkForUpdatesOnStartup, triggerOnlineRecheck } from './updater';
+import { safeOpenExternal } from './utils/safe-open-external';
 import {
   resolveRendererPath,
   getActiveRendererDir,
@@ -91,14 +92,33 @@ function createWindow() {
   }
 
   // External links open in the default browser instead of the Electron window.
+  // safeOpenExternal allowlists http/https/mailto so a tampered renderer can't
+  // hand the OS a file:// or custom-scheme URL.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    safeOpenExternal(url);
     return { action: 'deny' };
   });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+/**
+ * Re-check for updates when the machine wakes or unlocks. Automatic update
+ * checks are gated on `net.isOnline()` in the updater, so a session that
+ * started (or slept) offline never fired one — this nudges a fresh check on
+ * the offline → online transition that typically accompanies a resume.
+ */
+function setupNetworkMonitoring(): void {
+  let wasOnline = net.isOnline();
+  const checkAndRecheck = () => {
+    const online = net.isOnline();
+    if (online && !wasOnline) triggerOnlineRecheck();
+    wasOnline = online;
+  };
+  powerMonitor.on('resume', checkAndRecheck);
+  powerMonitor.on('unlock-screen', checkAndRecheck);
 }
 
 // Deep-link handler for myapp://… URLs.
@@ -215,6 +235,7 @@ app.whenReady().then(async () => {
     checkForUpdatesOnStartup().catch((err) =>
       console.error('[updater] startup check error:', err),
     );
+    setupNetworkMonitoring();
   }
 
   // Renderer OTA: initial check ~30s post-boot, then hourly. No-op in dev.
