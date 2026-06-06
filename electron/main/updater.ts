@@ -18,7 +18,7 @@
  */
 
 import { autoUpdater, type UpdateInfo } from 'electron-updater';
-import { BrowserWindow, ipcMain, app } from 'electron';
+import { BrowserWindow, ipcMain, app, net } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -28,6 +28,33 @@ let _disabled = false;
 
 const PERIODIC_CHECK_MS = 60 * 60 * 1000;
 const RETRY_DELAYS_MS = [10_000, 30_000, 90_000];
+
+/**
+ * Skip automatic update checks when the machine reports no network. Surfacing
+ * an `error` status from a fetch the user already knows can't succeed (the
+ * offline indicator is visible) is noise — we silently no-op instead and let
+ * `triggerOnlineRecheck()` fire a fresh check on the next offline → online
+ * transition (wired from `setupNetworkMonitoring` in main/index.ts).
+ */
+function isOffline(): boolean {
+  return !net.isOnline();
+}
+
+/** Called from setupNetworkMonitoring when net.isOnline() flips false → true. */
+export function triggerOnlineRecheck(): void {
+  if (_disabled) return;
+  console.log('[updater] online again — triggering update check');
+  autoUpdater.checkForUpdates().catch((err: Error) => {
+    console.error('[updater] online-recheck failed:', err.message);
+  });
+}
+
+/** Strip URLs from error messages before surfacing them in the UI. The shell
+ *  feed 302-redirects to presigned S3 URLs that embed the bucket access-key id
+ *  and endpoint — never let those reach the renderer. */
+function sanitizeErrorMessage(msg: string): string {
+  return msg.replace(/https?:\/\/\S+/g, '[URL redacted]');
+}
 
 export interface UpdateStatus {
   status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
@@ -54,8 +81,17 @@ export function initAutoUpdater(window: BrowserWindow): void {
 
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
-  // Prevent Chromium's HTTP cache from serving stale latest-*.yml.
-  autoUpdater.requestHeaders = { 'Cache-Control': 'no-store, no-cache' };
+
+  // NOTE: deliberately do NOT set `autoUpdater.requestHeaders` here. The `.yml`
+  // manifest is served by /api/electron/shell with response
+  // `Cache-Control: no-store, no-cache, must-revalidate, max-age=0`, which is
+  // the authoritative cache directive. A redundant `Cache-Control: no-store`
+  // *request* header applied globally (including to the .dmg/.zip binary fetch
+  // that 302-redirects to S3) was observed to suppress download-progress
+  // events on macOS — clicking Download produced 0% until the file finished,
+  // then jumped to 100%. If a stale-manifest bug ever recurs, scope the header
+  // to .yml requests via an executor override rather than re-enabling it
+  // globally.
 
   autoUpdater.on('checking-for-update', () => sendStatus({ status: 'checking' }));
   autoUpdater.on('update-available', (info) => sendStatus({ status: 'available', info }));
@@ -79,6 +115,10 @@ export function initAutoUpdater(window: BrowserWindow): void {
   registerUpdaterIpc();
 
   _periodicInterval = setInterval(() => {
+    if (isOffline()) {
+      console.log('[updater] periodic check skipped — offline');
+      return;
+    }
     autoUpdater.checkForUpdates().catch((err) => {
       console.error('[updater] periodic check failed:', err.message);
     });
@@ -86,8 +126,12 @@ export function initAutoUpdater(window: BrowserWindow): void {
 }
 
 function sendStatus(status: UpdateStatus): void {
+  // Redact presigned-URL leaks from error text before it reaches the renderer.
+  const safe: UpdateStatus = status.error
+    ? { ...status, error: sanitizeErrorMessage(status.error) }
+    : status;
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.webContents.send('updater:status', status);
+  mainWindow.webContents.send('updater:status', safe);
 }
 
 function registerUpdaterIpc(): void {
@@ -124,6 +168,10 @@ function registerUpdaterIpc(): void {
  */
 export async function checkForUpdatesOnStartup(): Promise<void> {
   if (_disabled) return;
+  if (isOffline()) {
+    console.log('[updater] startup check skipped — offline (will re-check when back online)');
+    return;
+  }
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
       await autoUpdater.checkForUpdates();

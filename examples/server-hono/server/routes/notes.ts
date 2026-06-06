@@ -22,6 +22,7 @@ import {
   successResponse,
   badRequestResponse,
   notFoundResponse,
+  conflictResponse,
   parseJsonBody,
 } from '../lib/response';
 import { broadcastChange } from '../lib/broadcast';
@@ -38,6 +39,11 @@ const createNoteSchema = z.object({
 const updateNoteSchema = z.object({
   title: z.string().max(200).optional(),
   body: z.string().max(50_000).optional(),
+  // Optimistic-concurrency baseline: the `updated_at` the client based its
+  // edit on. Optional — when present the PATCH is rejected with 409 if the
+  // server row has moved on since. The offline outbox classifies 409 as
+  // permanent and dead-letters the stale write (lib/sync/offline-executor.ts).
+  baselineUpdatedAt: z.string().optional(),
 });
 
 notes.get('/', async (c) => {
@@ -93,10 +99,29 @@ notes.patch('/:id', async (c) => {
   const parsed = updateNoteSchema.safeParse(raw);
   if (!parsed.success) return badRequestResponse(c, parsed.error.message);
 
+  const { baselineUpdatedAt, ...changes } = parsed.data;
   const admin = createAdminClient();
+
+  // Optimistic concurrency: if the client sent the `updated_at` it edited
+  // against, reject when the server row has changed since. Returning 409 (not
+  // 500) is load-bearing — the outbox treats 409 as permanent and dead-letters
+  // the stale write instead of retrying it forever on every reconnect.
+  if (baselineUpdatedAt) {
+    const { data: current } = await admin
+      .from('notes')
+      .select('updated_at')
+      .eq('id', id)
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (current && current.updated_at !== baselineUpdatedAt) {
+      return conflictResponse(c, 'Note was modified since you last loaded it');
+    }
+  }
+
   const { data, error } = await admin
     .from('notes')
-    .update(parsed.data)
+    .update(changes)
     .eq('id', id)
     .eq('org_id', orgId)
     .is('deleted_at', null)

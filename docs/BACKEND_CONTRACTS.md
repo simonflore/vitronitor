@@ -48,6 +48,7 @@ Status codes:
 | 401 | unauthenticated |
 | 403 | forbidden |
 | 404 | resource not found |
+| 409 | conflict — stale write (optimistic concurrency); dead-lettered |
 | 410 | gone (dead-lettered by the offline executor) |
 | 422 | unprocessable entity (dead-lettered by the offline executor) |
 | 429 | rate limit |
@@ -56,9 +57,20 @@ Status codes:
 
 The client (`lib/api-client.ts → apiFetch`) unwraps `data` automatically
 and throws an `ApiFetchError` on `ok: false`. Permanent errors (404 /
-410 / 422 — also 400 with `/no longer exists|not found/i`) cause the
+409 / 410 / 422 — also 400 with `/no longer exists|not found/i`) cause the
 sync layer's `OfflineExecutor` to throw `NonRetriableError` so the
 captured mutation is dead-lettered instead of retried forever.
+
+**409 / optimistic concurrency.** A mutation route MUST return `409` (not
+`500`) when a write is stale — i.e. the row changed on the server since the
+client captured the offline mutation. The reference notes route demonstrates
+this: the client sends `baselineUpdatedAt` (the row's `updated_at` as it knew
+it) on `PATCH /api/notes/:id`, and the server compares it to the current row,
+returning `409` on a mismatch. This is load-bearing for offline-first: a stale
+write re-sent from the durable outbox would otherwise loop forever. Classifying
+it as `409` lets the outbox dead-letter it instead. If you surface conflicts in
+the UI, return the current server row alongside the `409` so the client can
+rebase.
 
 Reference: `examples/server-hono/server/lib/response.ts`,
 `lib/sync/offline-executor.ts → isPermanentApiError`.
@@ -73,6 +85,7 @@ collection mount and on broadcast-triggered `invalidateQueries`.
 | Auth | Run the auth middleware. Reject 401 if no valid JWT. |
 | Validate `table` param | Must be on the allowlist (see `lib/sync/config.ts → isOrgScopedTable`). Reject 400 if unknown — defence in depth on top of RLS. |
 | Filter | `SELECT * FROM <table> WHERE org_id = c.var.orgId`. Add scope variants (per-user, per-team) by extending `lib/sync/config.ts` and branching here. |
+| Paginate | PostgREST caps every read at 1000 rows and silently truncates beyond that. Page with `ORDER BY id` + `.range()` until a short page drains the table (see `fetchAllPaginated`). The `ORDER BY id` is required — without it back-to-back ranges can skip or duplicate rows. |
 | Response | `{ ok: true, data: [...rows] }` with snake_case columns matching the Zod schemas in `lib/sync/collections/generated/`. |
 
 Reference: `examples/server-hono/server/routes/sync.ts`.
@@ -85,7 +98,7 @@ Per-collection HTTP routes paired with the offline executor's
 | Method | Path | Body | Response |
 |---|---|---|---|
 | POST | `/api/notes` | `{ id?, title?, body? }` | `{ ok: true, data: <full row> }` (201) |
-| PATCH | `/api/notes/:id` | `{ title?, body? }` | `{ ok: true, data: <full row> }` |
+| PATCH | `/api/notes/:id` | `{ title?, body?, baselineUpdatedAt? }` | `{ ok: true, data: <full row> }`, or `409` if `baselineUpdatedAt` no longer matches the server row |
 | DELETE | `/api/notes/:id` | – | `{ ok: true, data: { id } }` |
 | GET | `/api/notes` | – | `{ ok: true, data: [...] }` (optional — `/api/sync/notes` is the canonical bulk-read endpoint) |
 

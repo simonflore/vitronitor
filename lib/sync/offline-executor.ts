@@ -9,7 +9,7 @@
  *   - One `mutationFn` per mutation-bearing collection. The function
  *     translates captured insert/update/delete envelopes into the matching
  *     API calls, throws `NonRetriableError` for permanent server failures
- *     (404/410/422) so the outbox dead-letters instead of looping forever,
+ *     (404/409/410/422) so the outbox dead-letters instead of looping forever,
  *     and threads the idempotency key the executor supplies.
  *
  * Adding another collection: append to `MUTATION_FN_NAMES`, add a key to
@@ -97,10 +97,13 @@ export function disposeExecutor(): void {
 
 /** Map server errors to retryable / non-retryable for the outbox.
  *  Network errors and 5xx are retried; client-side errors that won't change
- *  on retry (404/410/422) are dead-lettered immediately. */
+ *  on retry (404/409/410/422) are dead-lettered immediately. 409 in
+ *  particular is a stale-write conflict (optimistic concurrency, see the
+ *  notes PATCH route) — re-sending the same captured mutation would conflict
+ *  forever, so it must dead-letter rather than loop. */
 function isPermanentApiError(err: unknown): boolean {
   if (!(err instanceof ApiFetchError)) return false;
-  if (err.status === 404 || err.status === 410 || err.status === 422) return true;
+  if (err.status === 404 || err.status === 409 || err.status === 410 || err.status === 422) return true;
   if (err.status === 400 && /no longer exists|not found/i.test(err.message)) return true;
   return false;
 }
@@ -124,7 +127,14 @@ function makeNotesMutationFn(): CollectionMutationFn {
           const original = m.original as DbNoteRow;
           await apiFetch(`/api/notes/${original.id}`, {
             method: 'PATCH',
-            body: JSON.stringify(changesToNotePartial(m.changes as Partial<DbNoteRow>)),
+            body: JSON.stringify({
+              ...changesToNotePartial(m.changes as Partial<DbNoteRow>),
+              // Optimistic-concurrency baseline: the row's `updated_at` as we
+              // knew it when this mutation was captured. The server returns 409
+              // if the row has changed since, so a stale offline edit
+              // dead-letters instead of clobbering a newer value.
+              baselineUpdatedAt: original.updated_at,
+            }),
           });
         } else if (m.type === 'delete') {
           const original = m.original as DbNoteRow;

@@ -28,7 +28,7 @@
  * `bash scripts/setup-signing-key.sh`, paste the printed PEM into both files.
  */
 
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, net } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
@@ -339,6 +339,12 @@ export async function checkForUpdate(force = false): Promise<{
   error?: string;
 }> {
   const before = loadState();
+
+  // No network — skip without touching `lastCheck`, so the first call after we
+  // come back online runs immediately instead of being rate-limited.
+  if (!net.isOnline()) {
+    return { status: 'up-to-date' };
+  }
 
   if (!force && before.lastCheck) {
     const elapsed = Date.now() - new Date(before.lastCheck).getTime();
