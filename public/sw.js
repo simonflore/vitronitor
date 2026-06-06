@@ -82,6 +82,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Auth routes — network-only, never cached. Serving a stale /login or an
+  // OAuth callback from cache can resurrect a signed-out shell or replay an
+  // expired auth state, so let these always hit the network and fail loudly
+  // when offline rather than returning a cached page.
+  if (/^\/(login|signup|auth)(\/|$)/.test(url.pathname)) {
+    return;
+  }
+
   // SPA navigations — network-first with cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(
