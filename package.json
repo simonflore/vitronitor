@@ -96,7 +96,7 @@
     "@types/react-dom": "^19",
     "@types/semver": "^7.7.1",
     "@vitejs/plugin-react-swc": "^4.3.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.1.0",
     "concurrently": "^10.0.5",
     "electron": "^43.5.0",
     "electron-builder": "^26.15.3",
