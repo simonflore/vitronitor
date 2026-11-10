@@ -105,7 +105,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "husky": "^9.1.7",
-    "jsdom": "^30.0.1",
+    "jsdom": "^31.0.0",
     "knip": "^6.32.2",
     "lint-staged": "^17.1.0",
     "postcss": "^8.5.26",
