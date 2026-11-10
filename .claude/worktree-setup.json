@@ -1,0 +1,6 @@
+{
+  "setup": [
+    "[ -f \"$MAIN_REPO/.env.local\" ] && cp \"$MAIN_REPO/.env.local\" . || true",
+    "npm ci --legacy-peer-deps"
+  ]
+}

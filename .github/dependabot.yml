@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # GitHub Actions: third-party actions pinned to commit SHAs (authors can
+  # retag); actions/* stay on major tags (GitHub controls those). Dependabot
+  # keeps whichever form each `uses:` line already has.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # npm: one grouped PR for minor + patch, one PR per major so each breaking
+  # bump gets its own review. Security updates ignore the schedule.
+  #
+  # The TanStack DB family is pinned exactly in package.json, and @tanstack/db
+  # through `overrides` (0.x packages break on minors and must agree on one
+  # @tanstack/db). Dependabot does not touch `overrides`, so a bump that needs
+  # a newer @tanstack/db fails CI's build job; move the family together then.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    versioning-strategy: "increase"
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/examples/server-hono"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      example-server:
+        patterns:
+          - "*"

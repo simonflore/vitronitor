@@ -18,7 +18,8 @@ export default [
       },
     },
     settings: {
-      react: { version: 'detect' },
+      // 'detect' calls context.getFilename(), which ESLint 10 removed.
+      react: { version: '19.2' },
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
@@ -40,6 +41,8 @@ export default [
       'ios',
       'android',
       'examples',
+      // Static marketing site, served as-is (no bundler, plain browser globals).
+      'landing',
       '*.config.*',
       'public/sw.js',
       'scripts',

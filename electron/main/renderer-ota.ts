@@ -35,7 +35,7 @@ import * as crypto from 'crypto';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
-import extract from 'extract-zip';
+import { extractZipBuffered } from './zip-extract';
 
 // REPLACE this placeholder with the public PEM printed by setup-signing-key.sh.
 // The same key is also pasted into capacitor.config.ts.
@@ -82,10 +82,6 @@ function getVersionIndexHtml(version: string): string {
 }
 function getVersionDistDir(version: string): string {
   return path.join(getVersionDir(version), 'dist');
-}
-function getBundledIndexHtml(): string {
-  // From electron/dist/main/, walk up to package root, then into dist/.
-  return path.join(__dirname, '..', '..', '..', 'dist', 'index.html');
 }
 function getBundledDistDir(): string {
   return path.join(__dirname, '..', '..', '..', 'dist');
@@ -376,7 +372,7 @@ export async function checkForUpdate(force = false): Promise<{
 
     fs.rmSync(stagingDir, { recursive: true, force: true });
     fs.mkdirSync(stagingDir, { recursive: true });
-    await extract(decryptedZip, { dir: stagingDir });
+    await extractZipBuffered(decryptedZip, stagingDir);
 
     const finalDist = path.join(finalDir, 'dist');
     fs.rmSync(finalDir, { recursive: true, force: true });

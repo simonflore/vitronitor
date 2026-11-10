@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+permissions:
+  contents: read
+
+# GitHub-hosted runners on purpose: this is a public template, and
+# pull_request runs from forks must execute in an isolated VM, never on
+# persistent self-hosted infrastructure. (Gigmeister runs self-hosted because
+# it is a private, single-author repo; that trade-off does not hold here.)
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --prefer-offline
+      - run: npm run lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --prefer-offline
+      - run: npx tsc --noEmit
+      # The root tsconfig excludes electron/, so check the main process on its
+      # own; otherwise a type error there only surfaces at packaging time.
+      - name: Typecheck (electron main)
+        run: npx tsc --noEmit -p electron/tsconfig.json
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --prefer-offline
+      - run: npm run test:coverage
+
+  build:
+    name: Build (web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --prefer-offline
+      - run: npm run build
+
+  quality:
+    name: Quality (lockfile, knip, audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --prefer-offline
+      - name: Lockfile drift check
+        if: always()
+        run: |
+          # Regenerate the lockfile from package.json without touching node_modules.
+          # If it would change, the committed lockfile is stale.
+          npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+          if ! git diff --exit-code -- package-lock.json; then
+            echo "::error::package-lock.json is out of sync with package.json. Run 'npm install --package-lock-only --legacy-peer-deps --ignore-scripts' locally and commit the result."
+            exit 1
+          fi
+      - name: Knip (dead code & unused deps)
+        if: always()
+        run: npm run knip
+      - name: Security audit (npm)
+        if: always()
+        # Audit the committed lockfile, not the one the drift step may have
+        # rewritten. Runtime deps only, at high: the open advisories are in
+        # dev-only build tooling (electron-builder chain, eslint plugins) that
+        # never reaches users. Same policy as gigmeister.
+        run: |
+          git checkout -- package-lock.json
+          npm audit --audit-level=high --omit=dev

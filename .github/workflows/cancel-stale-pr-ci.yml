@@ -1,0 +1,33 @@
+name: Cancel Stale PR CI
+
+# Cancel a PR's CI run as soon as the PR is merged or closed.
+#
+# ci.yml's `cancel-in-progress` only supersedes runs on the same ref. Merging
+# fires a fresh push to main (group `ci-refs/heads/main`), a different group
+# from the PR's run (`ci-refs/pull/<n>/merge`), so the PR run keeps going.
+# Queueing a no-op run in the PR's exact group cancels it at scheduling time.
+#
+# The group is rebuilt from the PR number on purpose: on a merged `closed`
+# event github.ref is the base branch, so `ci-${{ github.ref }}` would cancel
+# main's post-merge CI instead.
+
+on:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: ci-refs/pull/${{ github.event.pull_request.number }}/merge
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  reap:
+    name: Reap obsolete CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: |
+          echo "Cancelled obsolete CI for PR #${{ github.event.pull_request.number }} \
+          (${{ github.event.pull_request.merged && 'merged' || 'closed' }})."

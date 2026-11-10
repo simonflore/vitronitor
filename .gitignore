@@ -44,3 +44,7 @@ vendor/bundle
 
 # Tests
 coverage
+
+# Claude Code (personal settings, agent worktrees)
+.claude/settings.local.json
+.claude/worktrees

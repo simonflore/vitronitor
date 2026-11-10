@@ -46,13 +46,22 @@ const electronModules = [
   'lodash.isequal',
   'sax',
   'semver',
-  // renderer-OTA needs extract-zip + transitive deps for bundle install.
-  'extract-zip',
-  'get-stream',
-  'pump',
-  'end-of-stream',
-  'once',
-  'wrappy',
+  // renderer-OTA bundle install. JSZip, NOT extract-zip: extract-zip/yauzl's
+  // streaming zlib inflate deadlocks under Electron 43's bundled Node.
+  'jszip',
+  // jszip transitive
+  'lie',
+  'pako',
+  'readable-stream',
+  'setimmediate',
+  'immediate',
+  'core-util-is',
+  'inherits',
+  'isarray',
+  'process-nextick-args',
+  'string_decoder',
+  'util-deprecate',
+  'safe-buffer',
   'debug',
   'ms',
 ];

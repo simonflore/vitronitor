@@ -66,11 +66,14 @@ S3-compatible bucket (the last three are free to spin up — see
 
 ```bash
 npm run lint        # ESLint, fails on any warning
-npm run typecheck   # tsc --noEmit, strict
+npm run typecheck   # tsc --noEmit, strict (web + Electron main)
+npm run test:run    # Vitest
+npm run knip        # unused files, exports and dependencies
 ```
 
-Both are required green for CI to pass. There is no test suite yet —
-[adding one](#whats-in-scope) is welcome.
+CI runs the same set plus a production build, a lockfile drift check and
+`npm audit` (see `.github/workflows/ci.yml`). Husky runs lint-staged on
+commit and the typechecks on push, so most failures surface locally first.
 
 ## Pull request process
 

@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased — gigmeister tooling parity
+
+### Added
+
+- **CI** (`.github/workflows/ci.yml`, GitHub-hosted): lint, typecheck (web +
+  Electron main), Vitest with coverage, web build, lockfile drift, knip and
+  `npm audit --omit=dev`. Plus `cancel-stale-pr-ci.yml` and Dependabot
+  (root, `examples/server-hono`, GitHub Actions).
+- **Vitest** (jsdom + Testing Library) with a seed suite for `lib/version.ts`.
+- **knip** for dead code and unused dependencies, with boilerplate surface
+  listed explicitly in `knip.config.ts`.
+- **Husky + lint-staged**: lint on commit, both typechecks on push.
+- **Agent setup**: `CLAUDE.md`, `AGENTS.md`, `.claude/` settings, launch and
+  worktree config, generic commands (`/pick-issue`, `/create-plan`, `/review`,
+  ...) and the `/codex-review` skill.
+- `package-lock.json` is now committed (the OTA workflows already needed it).
+
+### Fixed
+
+- **Electron renderer OTA**: replaced `extract-zip` with a buffered JSZip
+  extractor (`electron/main/zip-extract.ts`, backported from gigmeister).
+  `extract-zip`'s streaming inflate deadlocks under Electron 43, so updates
+  never applied; it also carried an unpatched symlink path-traversal advisory.
+  Adds a zip-slip guard that rejects the whole bundle before writing.
+
+### Changed
+
+- Dependencies aligned with gigmeister: TypeScript 6, ESLint 10,
+  React Router 8, Electron 43, Capgo CLI 8, Vite React SWC plugin.
+- TanStack DB family pinned exactly, with `@tanstack/db` forced to 0.8.3.
+- GitHub Actions bumped to `checkout@v7` / `setup-node@v7`.
+
 ## Unreleased — TanStack-only sync
 
 The sync layer is now TanStack-native end-to-end. ElectricSQL and the
